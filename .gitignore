@@ -484,3 +484,4 @@ $RECYCLE.BIN/
 *.swp
 Requests
 API/appsettings.Development.json
+Domain/ERD.cd
