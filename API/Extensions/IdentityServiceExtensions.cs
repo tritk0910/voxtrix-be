@@ -8,7 +8,7 @@ namespace API.Extensions;
 
 public static class IdentityServiceExtensions
 {
-    public static IServiceCollection AddIdentityService(this IServiceCollection services, IConfiguration config)
+    public static IServiceCollection AddIdentityService(this IServiceCollection services)
     {
         services.AddIdentityCore<AppUser>(opt =>
             {
@@ -17,7 +17,7 @@ public static class IdentityServiceExtensions
             })
             .AddEntityFrameworkStores<DataContext>();
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["TokenKey"]));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("TokenKey")));
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(opt =>
