@@ -9,12 +9,12 @@ namespace API.Extensions;
 
 public static class ApplicationServiceExtensions
 {
-    public static IServiceCollection AddApplicationServiceExtensions(this IServiceCollection services, IConfiguration config)
+    public static IServiceCollection AddApplicationServiceExtensions(this IServiceCollection services)
     {
         services.AddControllers();
         services.AddDbContext<DataContext>(options =>
         {
-            options.UseNpgsql(config.GetConnectionString("DefaultConnection"));
+            options.UseNpgsql(Environment.GetEnvironmentVariable("DefaultConnection"));
         });
         services.AddCors();
         services.AddAutoMapper(typeof(MappingProfiles).Assembly);
