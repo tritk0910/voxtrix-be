@@ -11,3 +11,4 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=${CONNECTION_STRINGS}
+      - TokenKey=${TOKEN_KEY}
