@@ -1,6 +1,4 @@
-using System.Text.Json.Serialization;
-
-namespace Application.DTOs;
+namespace Application.DTOs.Accounts;
 
 public class UserDto
 {

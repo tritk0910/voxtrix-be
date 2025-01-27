@@ -16,10 +16,17 @@ public static class ApplicationServiceExtensions
         {
             options.UseNpgsql(Environment.GetEnvironmentVariable("DEFAULT_CONNECTIONS"));
         });
+        services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = Environment.GetEnvironmentVariable("REDIS_CONNECTION_STRING");
+            options.InstanceName = "RedisInstance";
+        });
         services.AddCors();
         services.AddAutoMapper(typeof(MappingProfiles).Assembly);
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddSingleton<IRedisService, RedisService>();
         return services;
     }
 }

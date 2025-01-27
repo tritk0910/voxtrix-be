@@ -1,4 +1,5 @@
-﻿using Application.DTOs;
+﻿
+using Application.DTOs.Accounts;
 using Domain.Entities;
 
 namespace Application.Interfaces;
