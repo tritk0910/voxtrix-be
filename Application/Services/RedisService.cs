@@ -1,5 +1,4 @@
 using StackExchange.Redis;
-using Microsoft.Extensions.Configuration;
 using Application.Interfaces;
 
 namespace Application.Services;
@@ -9,7 +8,7 @@ public class RedisService : IRedisService
     private readonly ConnectionMultiplexer _redis;
     private readonly IDatabase _database;
 
-    public RedisService(IConfiguration configuration)
+    public RedisService()
     {
         _redis = ConnectionMultiplexer.Connect(Environment.GetEnvironmentVariable("REDIS_CONNECTION_STRING"));
         _database = _redis.GetDatabase();
