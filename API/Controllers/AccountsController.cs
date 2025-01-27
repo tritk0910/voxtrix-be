@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using Application.DTOs;
+using Application.DTOs.Accounts;
 using Application.Interfaces;
 using AutoMapper;
 using Domain.Entities;
@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 namespace API.Controllers;
 
 [Authorize]
-public class AccountsController(ITokenService tokenService, IMapper mapper, UserManager<AppUser> userManager) : BaseApiController
+public class AccountsController(UserManager<AppUser> userManager, IMapper mapper, ITokenService tokenService, IEmailService emailService, IRedisService redisService) : BaseApiController
 {
     [AllowAnonymous]
     [HttpPost("register")]
@@ -64,5 +64,58 @@ public class AccountsController(ITokenService tokenService, IMapper mapper, User
         var userDto = mapper.Map<UserDto>(user);
         userDto.Token = tokenService.CreateToken(user);
         return userDto;
+    }
+
+    [AllowAnonymous]
+    [HttpPost("forgot-password")]
+    public async Task<ActionResult> ForgotPassword(ForgotPasswordDto forgotPasswordDto)
+    {
+        var user = await userManager.FindByEmailAsync(forgotPasswordDto.Email);
+        if (user == null) return BadRequest("User not found");
+
+        // Generate OTP
+        var otp = new Random().Next(100000, 999999).ToString();
+
+        // Store OTP in Redis
+        await redisService.SetOtpAsync(user.Id.ToString(), otp, TimeSpan.FromMinutes(10));
+
+        // Send OTP to user's email
+        var message = $"Your OTP for password reset is: {otp}";
+        await emailService.SendEmailAsync(forgotPasswordDto.Email, "Password Reset OTP", message);
+
+        return Ok();
+    }
+
+    [AllowAnonymous]
+    [HttpPost("reset-password")]
+    public async Task<ActionResult> ResetPassword(ResetPasswordDto resetPasswordDto)
+    {
+        var user = await userManager.FindByEmailAsync(resetPasswordDto.Email);
+        if (user == null) return BadRequest("User not found");
+
+        // Retrieve OTP from Redis
+        var storedOtp = await redisService.GetOtpAsync(user.Id.ToString());
+        if (storedOtp != resetPasswordDto.Otp)
+        {
+            return BadRequest("Invalid or expired OTP");
+        }
+
+        // Reset password
+        var resetPassResult = await userManager.RemovePasswordAsync(user);
+        if (!resetPassResult.Succeeded)
+        {
+            return BadRequest("Error removing old password");
+        }
+
+        resetPassResult = await userManager.AddPasswordAsync(user, resetPasswordDto.NewPassword);
+        if (!resetPassResult.Succeeded)
+        {
+            return BadRequest("Error setting new password");
+        }
+
+        // Clear OTP from Redis
+        await redisService.DeleteOtpAsync(user.Id.ToString());
+
+        return Ok("Password has been reset successfully");
     }
 }

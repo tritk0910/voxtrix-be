@@ -19,7 +19,9 @@ public static class ApplicationServiceExtensions
         services.AddCors();
         services.AddAutoMapper(typeof(MappingProfiles).Assembly);
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddSingleton<IRedisService, RedisService>();
         return services;
     }
 }
