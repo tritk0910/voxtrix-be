@@ -10,7 +10,21 @@ public class RedisService : IRedisService
 
     public RedisService()
     {
-        _redis = ConnectionMultiplexer.Connect(Environment.GetEnvironmentVariable("REDIS_CONNECTION_STRING"));
+        var redisHost = Environment.GetEnvironmentVariable("REDIS_HOST");
+        var redisPort = Environment.GetEnvironmentVariable("REDIS_PORT");
+        var redisUser = Environment.GetEnvironmentVariable("REDIS_USER");
+        var redisPassword = Environment.GetEnvironmentVariable("REDIS_PASSWORD");
+
+        var configurationOptions = new ConfigurationOptions
+        {
+            EndPoints = { $"{redisHost}:{redisPort}" },
+            User = redisUser,
+            Password = redisPassword,
+            Ssl = true,
+            AbortOnConnectFail = false
+        };
+
+        _redis = ConnectionMultiplexer.Connect(configurationOptions);
         _database = _redis.GetDatabase();
     }
 
