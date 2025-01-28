@@ -6,11 +6,10 @@ using Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Env.Load();
 // Add services to the container.
 builder.Services
-    .AddIdentityService()
-    .AddApplicationServiceExtensions();
+    .AddIdentityService(builder.Configuration)
+    .AddApplicationServiceExtensions(builder.Configuration);
 
 var app = builder.Build();
 
