@@ -1,14 +1,36 @@
-version: '3.4'
-
 services:
   api:
-    image: voxtrix-be-api
+    image: ${DOCKER_REGISTRY-}api
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: API/Dockerfile
     ports:
-      - "5000:80"
+      - "5000:5000"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-    env_file:
-      - API/.env
+      - EmailSettings__SmtpServer=smtp.gmail.com
+      - EmailSettings__SmtpPort=587
+      - EmailSettings__SenderName=voxtrix
+      - EmailSettings__SenderEmail=dev.voxtrix@gmail.com
+      - EmailSettings__Password=xancehuqphlfccsz
+      - ConnectionStrings__Database=Host=voxtrix.database;Port=5432;Database=database;Username=postgres;Password=postgres;Include Error Detail=true
+      - ConnectionStrings__Cache=voxtrix.cache:6379
+      - TokenKey=5NPBzaEYh6BGrCU/P2YDNZ2BTgqLimvHUA3WgIvCTgFMYIqDNIGH+wTQ31b3eYXUem7nhrhgnyL7VHy6cUeCQA==
+
+  voxtrix.database:
+    image: postgres:latest
+    container_name: voxtrix.database
+    environment:
+      - POSTGRES_DB=database
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - ./.containers/products-db:/var/lib/prosgresql/data
+    ports:
+      - "5432:5432"
+    
+  voxtrix.cache:
+    image: redis:latest
+    restart: always
+    container_name: voxtrix.cache
+    ports:
+      - "6379:6379"

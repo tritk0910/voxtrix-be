@@ -3,11 +3,12 @@ using System.Security.Claims;
 using System.Text;
 using Application.Interfaces;
 using Domain.Entities;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Application.Services;
 
-public class TokenService() : ITokenService
+public class TokenService(IConfiguration _config) : ITokenService
 {
 
     public string CreateToken(AppUser user)
@@ -16,9 +17,9 @@ public class TokenService() : ITokenService
                 new(ClaimTypes.Name, user.UserName),
                 new(ClaimTypes.NameIdentifier, user.Id),
                 new(ClaimTypes.Email, user.Email),
-            };
+        };
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("TOKEN_KEY")));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["TokenKey"]));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
         var tokenDescriptor = new SecurityTokenDescriptor
