@@ -8,20 +8,16 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Application.Services;
 
-public class TokenService : ITokenService
+public class TokenService(IConfiguration _config) : ITokenService
 {
-    private readonly IConfiguration _config;
-    public TokenService(IConfiguration config)
-    {
-        _config = config;
-    }
+
     public string CreateToken(AppUser user)
     {
         var claims = new List<Claim>{
                 new(ClaimTypes.Name, user.UserName),
                 new(ClaimTypes.NameIdentifier, user.Id),
                 new(ClaimTypes.Email, user.Email),
-            };
+        };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["TokenKey"]));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
