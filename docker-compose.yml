@@ -3,7 +3,7 @@ services:
     image: ${DOCKER_REGISTRY-}api
     build:
       context: .
-      dockerfile: API/Dockerfile
+      dockerfile: Dockerfile
     ports:
       - "5000:5000"
     environment:
