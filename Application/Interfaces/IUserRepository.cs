@@ -1,5 +1,7 @@
 ﻿
+using Application.Core;
 using Application.DTOs.Accounts;
+using Application.DTOs.Users;
 using Domain.Entities;
 
 namespace Application.Interfaces;
@@ -11,5 +13,7 @@ public interface IUserRepository
     void AddUser(AppUser user);
     Task<int> SaveAllAsync();
     Task<AppUser> GetUserByUsernameAsync(string username);
-    Task<IEnumerable<UserDto>> GetAllUsersAsync();
+    IQueryable<UserDto> GetAllUsersAsync(DefaultParams defaultParams);
+    Task<UserDetailDto> GetUserByIdAsync(string id);
+    Task<string> EditUserAsync(UserEditDto userEditDto);
 }

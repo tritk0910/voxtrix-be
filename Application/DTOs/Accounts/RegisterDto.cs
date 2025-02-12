@@ -1,4 +1,5 @@
 namespace Application.DTOs.Accounts;
+
 public class RegisterDto
 {
     public required string Username { get; set; }
