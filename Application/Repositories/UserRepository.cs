@@ -61,7 +61,7 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
 
     public async Task<string> EditUserAsync(UserEditDto UserEditDto)
     {
-        var user = await context.Users.FirstOrDefaultAsync(x => x.UserName == UserEditDto.Username);
+        var user = await context.Users.FirstOrDefaultAsync(x => x.Id == UserEditDto.Id);
 
         if (user == null) return "User not found";
 

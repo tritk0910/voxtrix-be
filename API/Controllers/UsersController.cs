@@ -46,6 +46,6 @@ public class UsersController(IUserRepository userRepository, IMapper mapper) : B
         {
             return NotFound(Result<string>.FailureResult(result));
         }
-        return Ok(Result<string>.SuccessResult(null, result));
+        return Ok(Result<UserEditDto>.SuccessResult(userEditDto, result));
     }
 }
