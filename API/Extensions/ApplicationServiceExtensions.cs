@@ -17,7 +17,7 @@ public static class ApplicationServiceExtensions
             options.UseNpgsql(configuration.GetConnectionString("Database"));
         });
         services.AddCors();
-        services.AddAutoMapper(typeof(MappingProfiles).Assembly);
+        services.AddAutoMapper(typeof(AccountProfile).Assembly);
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IUserRepository, UserRepository>();

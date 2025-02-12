@@ -1,10 +1,8 @@
 namespace Application.DTOs.Users;
 
-public class UserDetailDto
+public class UserEditDto
 {
     public string Username { get; set; }
     public string DisplayName { get; set; }
-    public string Email { get; set; }
     public string Bio { get; set; }
-    public DateOnly DoB { get; set; }
 }

@@ -1,15 +1,14 @@
 using Application.DTOs.Accounts;
+using Application.DTOs.Users;
 using AutoMapper;
 using Domain.Entities;
 
 namespace Application.Profiles;
 
-public class MappingProfiles : Profile
+public class AccountProfile : Profile
 {
-    public MappingProfiles()
+    public AccountProfile()
     {
-        CreateMap<AppUser, UserDto>();
-        CreateMap<UserDto, AppUser>();
         CreateMap<RegisterDto, AppUser>();
         CreateMap<LoginDto, AppUser>();
     }
