@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Persistence;
@@ -11,9 +12,11 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250214052032_UpdateInviteConstraint")]
+    partial class UpdateInviteConstraint
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -148,26 +151,18 @@ namespace Persistence.Migrations
 
             modelBuilder.Entity("Domain.Entities.FriendshipRelation", b =>
                 {
-                    b.Property<string>("FriendshipRelationId")
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FriendId")
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("FriendId")
-                        .HasColumnType("text");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("text");
-
-                    b.HasKey("FriendshipRelationId");
+                    b.HasKey("UserId", "FriendId");
 
                     b.HasIndex("FriendId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Friends");
                 });
@@ -429,7 +424,7 @@ namespace Persistence.Migrations
 
             modelBuilder.Entity("Domain.Entities.UserBlock", b =>
                 {
-                    b.Property<string>("UserBlockId")
+                    b.Property<string>("UserId")
                         .HasColumnType("text");
 
                     b.Property<string>("BlockedUserId")
@@ -438,14 +433,9 @@ namespace Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("UserId")
-                        .HasColumnType("text");
-
-                    b.HasKey("UserBlockId");
+                    b.HasKey("UserId", "BlockedUserId");
 
                     b.HasIndex("BlockedUserId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("UserBlocks");
                 });
@@ -663,12 +653,14 @@ namespace Persistence.Migrations
                     b.HasOne("Domain.Entities.AppUser", "Friend")
                         .WithMany("FriendRequests")
                         .HasForeignKey("FriendId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Domain.Entities.AppUser", "User")
                         .WithMany("Friends")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Friend");
 
@@ -807,12 +799,14 @@ namespace Persistence.Migrations
                     b.HasOne("Domain.Entities.AppUser", "BlockedUser")
                         .WithMany("BlockedByUsers")
                         .HasForeignKey("BlockedUserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Domain.Entities.AppUser", "User")
                         .WithMany("BlockedUsers")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("BlockedUser");
 

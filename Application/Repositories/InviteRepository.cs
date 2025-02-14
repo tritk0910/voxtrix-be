@@ -7,56 +7,31 @@ namespace Application.Repositories;
 
 public class InviteRepository(DataContext context) : IInviteRepository
 {
-    public async Task<bool> DeleteInviteAsync(string inviteId)
-    {
-        var result = await context.Invites
-            .Where(i => i.InviteId == inviteId)
-            .FirstOrDefaultAsync();
-
-        if (result != null)
-        {
-            context.Invites.Remove(result);
-            await context.SaveChangesAsync();
-            return true;
-        }
-
-        return false;
-    }
-
-    public async Task<string> GetInviteAsync(string inviteCode, string userId)
+    public async Task<string> JoinServerViaInviteLinkAsync(string inviteCode, string userId)
     {
         var result = await context.Invites
             .Where(i => i.InviteCode == inviteCode)
             .FirstOrDefaultAsync();
 
-        if (result == null)
-        {
-            return "Invite not found";
-        }
+        if (result == null) return "Invite not found";
+        if (result.IsPaused) return "Invite is paused";
+
+        // Check if the invite link is expired
+        if (result.ExpiredAt < DateTime.UtcNow) return "Invite link is expired";
 
         // Check if the user is banned from the server
         var isBanned = await context.ServerBans
             .AnyAsync(b => b.ServerId == result.ServerId && b.UserId == userId && b.UnbannedAt > DateTime.UtcNow);
 
-        if (isBanned)
-        {
-            return "User is banned from the server";
-        }
+        if (isBanned) return "User is banned from the server";
 
         // Check if the user is already in the server
         var isMember = await context.ServerMembers
             .AnyAsync(sm => sm.ServerId == result.ServerId && sm.MemberId == userId);
-
-        if (isMember)
-        {
-            return "User is already a member of the server";
-        }
+        if (isMember) return "User is already a member of the server";
 
         // Check if the invite has remaining uses or is unlimited
-        if (result.MaxUses != null && result.Uses >= result.MaxUses)
-        {
-            return "Invite has no remaining uses";
-        }
+        if (result.MaxUses != -1 && result.Uses >= result.MaxUses) return "Invite has no remaining uses";
 
         // Add the user to the server
         var serverMember = new ServerMember

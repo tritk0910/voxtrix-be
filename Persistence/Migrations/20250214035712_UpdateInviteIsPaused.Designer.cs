@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Persistence;
@@ -11,9 +12,11 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250214035712_UpdateInviteIsPaused")]
+    partial class UpdateInviteIsPaused
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -146,42 +149,16 @@ namespace Persistence.Migrations
                     b.ToTable("Channels");
                 });
 
-            modelBuilder.Entity("Domain.Entities.FriendshipRelation", b =>
-                {
-                    b.Property<string>("FriendshipRelationId")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("FriendId")
-                        .HasColumnType("text");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("text");
-
-                    b.HasKey("FriendshipRelationId");
-
-                    b.HasIndex("FriendId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Friends");
-                });
-
             modelBuilder.Entity("Domain.Entities.Invite", b =>
                 {
                     b.Property<string>("InviteId")
                         .HasColumnType("text");
 
-                    b.Property<string>("AuthorId")
-                        .HasColumnType("text");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("ExpiredAt")
                         .HasColumnType("timestamp with time zone");
@@ -204,7 +181,7 @@ namespace Persistence.Migrations
 
                     b.HasKey("InviteId");
 
-                    b.HasIndex("AuthorId");
+                    b.HasIndex("CreatedBy");
 
                     b.HasIndex("InviteCode")
                         .IsUnique();
@@ -427,29 +404,6 @@ namespace Persistence.Migrations
                     b.ToTable("ServerRole");
                 });
 
-            modelBuilder.Entity("Domain.Entities.UserBlock", b =>
-                {
-                    b.Property<string>("UserBlockId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("BlockedUserId")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("text");
-
-                    b.HasKey("UserBlockId");
-
-                    b.HasIndex("BlockedUserId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserBlocks");
-                });
-
             modelBuilder.Entity("Domain.Entities.VoiceState", b =>
                 {
                     b.Property<string>("VoiceStateId")
@@ -658,38 +612,20 @@ namespace Persistence.Migrations
                     b.Navigation("Server");
                 });
 
-            modelBuilder.Entity("Domain.Entities.FriendshipRelation", b =>
-                {
-                    b.HasOne("Domain.Entities.AppUser", "Friend")
-                        .WithMany("FriendRequests")
-                        .HasForeignKey("FriendId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("Domain.Entities.AppUser", "User")
-                        .WithMany("Friends")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("Friend");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Domain.Entities.Invite", b =>
                 {
-                    b.HasOne("Domain.Entities.AppUser", "Author")
+                    b.HasOne("Domain.Entities.AppUser", "User")
                         .WithMany("Invites")
-                        .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("CreatedBy");
 
                     b.HasOne("Domain.Entities.Server", "Server")
                         .WithMany("Invites")
                         .HasForeignKey("ServerId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.Navigation("Author");
-
                     b.Navigation("Server");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Domain.Entities.Message", b =>
@@ -740,7 +676,7 @@ namespace Persistence.Migrations
                     b.HasOne("Domain.Entities.AppUser", "Owner")
                         .WithMany("OwnedServers")
                         .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Owner");
                 });
@@ -798,23 +734,6 @@ namespace Persistence.Migrations
                         .HasForeignKey("UserId");
 
                     b.Navigation("Role");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Domain.Entities.UserBlock", b =>
-                {
-                    b.HasOne("Domain.Entities.AppUser", "BlockedUser")
-                        .WithMany("BlockedByUsers")
-                        .HasForeignKey("BlockedUserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("Domain.Entities.AppUser", "User")
-                        .WithMany("BlockedUsers")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("BlockedUser");
 
                     b.Navigation("User");
                 });
@@ -887,14 +806,6 @@ namespace Persistence.Migrations
 
             modelBuilder.Entity("Domain.Entities.AppUser", b =>
                 {
-                    b.Navigation("BlockedByUsers");
-
-                    b.Navigation("BlockedUsers");
-
-                    b.Navigation("FriendRequests");
-
-                    b.Navigation("Friends");
-
                     b.Navigation("Invites");
 
                     b.Navigation("Messages");

@@ -10,12 +10,13 @@ public class Invite
     public string ServerId { get; set; }
     public Server Server { get; set; }
     [StringLength(10)]
-    public string InviteCode { get; set; } = Guid.NewGuid().ToString()[..10];
+    public string InviteCode { get; set; }
     public int? MaxUses { get; set; } // Changed to nullable int to allow unlimited uses
     public int Uses { get; set; } = 0;
     [ForeignKey("User")]
-    public string CreatedBy { get; set; }
-    public AppUser User { get; set; }
+    public string AuthorId { get; set; }
+    public bool IsPaused { get; set; } = false;
+    public AppUser Author { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime ExpiredAt { get; set; } = DateTime.UtcNow.AddDays(7);
+    public DateTime ExpiredAt { get; set; }
 }

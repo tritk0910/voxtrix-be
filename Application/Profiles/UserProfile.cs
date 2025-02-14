@@ -10,9 +10,14 @@ public class UserProfile : Profile
     {
         CreateMap<UserDto, AppUser>()
             .ReverseMap();
+        CreateMap<UserBasicDto, AppUser>()
+            .ReverseMap();
         CreateMap<UserDetailsDto, AppUser>()
             .ReverseMap();
         CreateMap<UserEditDto, AppUser>()
+            .ReverseMap();
+        CreateMap<FriendshipRelation, UserBasicDto>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.FriendId))
             .ReverseMap();
     }
 }

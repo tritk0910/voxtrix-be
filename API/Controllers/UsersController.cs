@@ -13,9 +13,9 @@ namespace API.Controllers;
 public partial class UsersController(UserManager<AppUser> userManager, IUserRepository userRepository, IMapper mapper) : BaseApiController
 {
     [HttpGet]
-    public async Task<ActionResult<Result<PagedResult<UserDto>>>> GetUsersAsync([FromBody] DefaultParams defaultParams)
+    public async Task<ActionResult<Result<PagedResult<UserDto>>>> GetUsers([FromBody] DefaultParams defaultParams)
     {
-        var users = userRepository.GetAllUsersAsync(defaultParams);
+        var users = await userRepository.GetAllUsersAsync(defaultParams);
         var pagedUsers = await PagedList<UserDto>.CreateAsync(users, defaultParams.PageNumber, defaultParams.PageSize);
 
         var result = new PagedResult<UserDto>
@@ -55,10 +55,7 @@ public partial class UsersController(UserManager<AppUser> userManager, IUserRepo
     public async Task<ActionResult<Result<string>>> DeleteUserAsync([FromQuery] string userId)
     {
         var result = await userRepository.DeleteUserAsync(userId);
-        if (result == "User not found")
-        {
-            return NotFound(Result<string>.FailureResult(result));
-        }
-        return Ok(Result<string>.SuccessResult(result, "User deleted successfully"));
+        if (result == "User deleted successfully") return Ok(Result<string>.SuccessResult(result, "User deleted successfully"));
+        return NotFound(Result<string>.FailureResult(result));
     }
 }
