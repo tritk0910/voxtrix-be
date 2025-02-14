@@ -13,12 +13,17 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
     public DbSet<ServerBan> ServerBans { get; set; }
     public DbSet<ServerMember> ServerMembers { get; set; }
     public DbSet<Invite> Invites { get; set; }
-    public DbSet<FriendshipRelation> Friends { get; set; }
+    public DbSet<Friend> Friends { get; set; }
     public DbSet<UserBlock> UserBlocks { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<AppUser>(e =>
+        {
+            e.HasIndex(u => u.UserName).IsUnique();
+        });
 
         modelBuilder.Entity<ServerMember>(e =>
         {
@@ -138,16 +143,12 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
             e.HasIndex(sm => new { sm.UserId, sm.ChannelId }).IsUnique();
         });
 
-        modelBuilder.Entity<FriendshipRelation>(e =>
+        modelBuilder.Entity<Friend>(e =>
         {
-            e.HasKey(f => f.FriendshipRelationId);
+            e.HasKey(f => f.FriendId);
             e.HasOne(f => f.User)
                 .WithMany(u => u.Friends)
                 .HasForeignKey(f => f.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-            e.HasOne(f => f.Friend)
-                .WithMany(u => u.FriendRequests)
-                .HasForeignKey(f => f.FriendId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -157,10 +158,6 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
             e.HasOne(ub => ub.User)
                 .WithMany(u => u.BlockedUsers)
                 .HasForeignKey(ub => ub.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-            e.HasOne(ub => ub.BlockedUser)
-                .WithMany(u => u.BlockedByUsers)
-                .HasForeignKey(ub => ub.BlockedUserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
     }

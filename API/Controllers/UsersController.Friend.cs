@@ -1,5 +1,4 @@
 using Application.Core;
-using Application.DTOs.Friends;
 using Application.DTOs.Users;
 using Microsoft.AspNetCore.Mvc;
 
@@ -62,10 +61,10 @@ public partial class UsersController
     }
 
     [HttpPost("friends/request")]
-    public async Task<ActionResult<Result<string>>> SendFriendRequest([FromQuery] string userId, string friendId)
+    public async Task<ActionResult<Result<string>>> SendFriendRequest([FromQuery] string userId, string targetUsername)
     {
-        var result = await userRepository.SendFriendRequestAsync(userId, friendId);
-        if (result == "Friend request sent") return Ok(Result<string>.SuccessResult("", result));
+        var result = await userRepository.SendFriendRequestAsync(userId, targetUsername);
+        if (result == "Friend request sent" || result == "Friend request accepted") return Ok(Result<string>.SuccessResult("", result));
 
         return BadRequest(Result<string>.FailureResult(result));
     }
@@ -83,7 +82,7 @@ public partial class UsersController
     public async Task<ActionResult<Result<string>>> CancelFriendRequest([FromQuery] string requestId)
     {
         var result = await userRepository.RemoveFriendRequestAsync(requestId);
-        if (result == "Friend request removed") return Ok(Result<string>.SuccessResult("", result));
+        if (result == "Friend removed successfully") return Ok(Result<string>.SuccessResult("", result));
 
         return BadRequest(Result<string>.FailureResult(result));
     }
