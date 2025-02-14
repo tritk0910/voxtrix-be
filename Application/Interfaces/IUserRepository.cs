@@ -14,6 +14,7 @@ public interface IUserRepository
     Task<int> SaveAllAsync();
     Task<AppUser> GetUserByUsernameAsync(string username);
     IQueryable<UserDto> GetAllUsersAsync(DefaultParams defaultParams);
-    Task<UserDetailDto> GetUserByIdAsync(string id);
+    Task<UserDetailsDto> GetUserByIdAsync(string id);
     Task<string> EditUserAsync(UserEditDto userEditDto);
+    Task<string> DeleteUserAsync(string userId);
 }

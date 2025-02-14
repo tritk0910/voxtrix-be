@@ -5,7 +5,7 @@ namespace Domain.Entities;
 public class ServerBan
 {
     [Key]
-    public string BanId { get; set; }
+    public string BanId { get; set; } = Guid.NewGuid().ToString();
     public string ServerId { get; set; }
     public Server Server { get; set; }
     public string UserId { get; set; }

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Persistence;
@@ -11,9 +12,11 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250213055146_UpdateInviteId")]
+    partial class UpdateInviteId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -151,6 +154,9 @@ namespace Persistence.Migrations
                     b.Property<string>("InviteId")
                         .HasColumnType("text");
 
+                    b.Property<string>("ChannelId")
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -164,7 +170,7 @@ namespace Persistence.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)");
 
-                    b.Property<int?>("MaxUses")
+                    b.Property<int>("MaxUses")
                         .HasColumnType("integer");
 
                     b.Property<string>("ServerId")
@@ -174,6 +180,8 @@ namespace Persistence.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("InviteId");
+
+                    b.HasIndex("ChannelId");
 
                     b.HasIndex("CreatedBy");
 
@@ -608,6 +616,10 @@ namespace Persistence.Migrations
 
             modelBuilder.Entity("Domain.Entities.Invite", b =>
                 {
+                    b.HasOne("Domain.Entities.Channel", "Channel")
+                        .WithMany()
+                        .HasForeignKey("ChannelId");
+
                     b.HasOne("Domain.Entities.AppUser", "User")
                         .WithMany("Invites")
                         .HasForeignKey("CreatedBy");
@@ -616,6 +628,8 @@ namespace Persistence.Migrations
                         .WithMany("Invites")
                         .HasForeignKey("ServerId")
                         .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Channel");
 
                     b.Navigation("Server");
 

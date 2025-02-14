@@ -7,6 +7,7 @@ public class Server
     [Key]
     public string ServerId { get; set; } = Guid.NewGuid().ToString();
     public string ServerName { get; set; }
+    public string Avatar { get; set; }
     public string BannerImage { get; set; }
     public string OwnerId { get; set; }
     public AppUser Owner { get; set; }
@@ -15,4 +16,5 @@ public class Server
     public ICollection<Invite> Invites { get; set; } = [];
     public ICollection<ServerBan> Bans { get; set; } = [];
     public ICollection<Channel> Channels { get; set; } = [];
+    public ICollection<ServerRole> Roles { get; set; } = [];
 }

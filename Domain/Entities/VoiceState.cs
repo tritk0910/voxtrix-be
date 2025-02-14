@@ -5,7 +5,7 @@ namespace Domain.Entities;
 public class VoiceState
 {
     [Key]
-    public string VoiceStateId { get; set; }
+    public string VoiceStateId { get; set; } = Guid.NewGuid().ToString();
     public string UserId { get; set; }
     public AppUser User { get; set; }
     public string ChannelId { get; set; }

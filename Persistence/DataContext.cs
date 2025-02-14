@@ -12,6 +12,7 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
     public DbSet<Server> Servers { get; set; }
     public DbSet<ServerBan> ServerBans { get; set; }
     public DbSet<ServerMember> ServerMembers { get; set; }
+    public DbSet<Invite> Invites { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -129,7 +130,7 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
             e.HasIndex(s => s.ServerId).IsUnique();
         });
 
-        modelBuilder.Entity<UserRole>(e =>
+        modelBuilder.Entity<ServerRole>(e =>
         {
             e.HasIndex(sm => new { sm.UserId, sm.RoleId }).IsUnique();
         });

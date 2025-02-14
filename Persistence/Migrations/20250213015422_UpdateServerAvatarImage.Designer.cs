@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Persistence;
@@ -11,9 +12,11 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250213015422_UpdateServerAvatarImage")]
+    partial class UpdateServerAvatarImage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -42,9 +45,6 @@ namespace Persistence.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CustomStatus")
-                        .HasColumnType("text");
 
                     b.Property<string>("DisplayName")
                         .HasColumnType("text");
@@ -151,6 +151,9 @@ namespace Persistence.Migrations
                     b.Property<string>("InviteId")
                         .HasColumnType("text");
 
+                    b.Property<string>("ChannelId")
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -164,7 +167,7 @@ namespace Persistence.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)");
 
-                    b.Property<int?>("MaxUses")
+                    b.Property<int>("MaxUses")
                         .HasColumnType("integer");
 
                     b.Property<string>("ServerId")
@@ -175,6 +178,8 @@ namespace Persistence.Migrations
 
                     b.HasKey("InviteId");
 
+                    b.HasIndex("ChannelId");
+
                     b.HasIndex("CreatedBy");
 
                     b.HasIndex("InviteCode")
@@ -182,7 +187,7 @@ namespace Persistence.Migrations
 
                     b.HasIndex("ServerId");
 
-                    b.ToTable("Invites");
+                    b.ToTable("Invite");
                 });
 
             modelBuilder.Entity("Domain.Entities.Message", b =>
@@ -284,14 +289,14 @@ namespace Persistence.Migrations
                     b.Property<string>("ServerId")
                         .HasColumnType("text");
 
-                    b.Property<string>("Avatar")
-                        .HasColumnType("text");
-
                     b.Property<string>("BannerImage")
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Image")
+                        .HasColumnType("text");
 
                     b.Property<string>("OwnerId")
                         .HasColumnType("text");
@@ -345,13 +350,13 @@ namespace Persistence.Migrations
                     b.Property<bool>("IsBanned")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("IsOwner")
-                        .HasColumnType("boolean");
-
                     b.Property<DateTime>("JoinedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("MemberId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Role")
                         .HasColumnType("text");
 
                     b.Property<string>("ServerId")
@@ -367,35 +372,25 @@ namespace Persistence.Migrations
                     b.ToTable("ServerMembers");
                 });
 
-            modelBuilder.Entity("Domain.Entities.ServerRole", b =>
+            modelBuilder.Entity("Domain.Entities.UserRole", b =>
                 {
-                    b.Property<string>("ServerRoleId")
+                    b.Property<string>("UserRoleId")
                         .HasColumnType("text");
 
                     b.Property<string>("RoleId")
                         .HasColumnType("text");
 
-                    b.Property<string>("ServerId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ServerMemberId")
-                        .HasColumnType("text");
-
                     b.Property<string>("UserId")
                         .HasColumnType("text");
 
-                    b.HasKey("ServerRoleId");
+                    b.HasKey("UserRoleId");
 
                     b.HasIndex("RoleId");
-
-                    b.HasIndex("ServerId");
-
-                    b.HasIndex("ServerMemberId");
 
                     b.HasIndex("UserId", "RoleId")
                         .IsUnique();
 
-                    b.ToTable("ServerRole");
+                    b.ToTable("UserRole");
                 });
 
             modelBuilder.Entity("Domain.Entities.VoiceState", b =>
@@ -608,6 +603,10 @@ namespace Persistence.Migrations
 
             modelBuilder.Entity("Domain.Entities.Invite", b =>
                 {
+                    b.HasOne("Domain.Entities.Channel", "Channel")
+                        .WithMany()
+                        .HasForeignKey("ChannelId");
+
                     b.HasOne("Domain.Entities.AppUser", "User")
                         .WithMany("Invites")
                         .HasForeignKey("CreatedBy");
@@ -616,6 +615,8 @@ namespace Persistence.Migrations
                         .WithMany("Invites")
                         .HasForeignKey("ServerId")
                         .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Channel");
 
                     b.Navigation("Server");
 
@@ -709,19 +710,11 @@ namespace Persistence.Migrations
                     b.Navigation("Server");
                 });
 
-            modelBuilder.Entity("Domain.Entities.ServerRole", b =>
+            modelBuilder.Entity("Domain.Entities.UserRole", b =>
                 {
                     b.HasOne("Domain.Entities.Role", "Role")
                         .WithMany()
                         .HasForeignKey("RoleId");
-
-                    b.HasOne("Domain.Entities.Server", null)
-                        .WithMany("Roles")
-                        .HasForeignKey("ServerId");
-
-                    b.HasOne("Domain.Entities.ServerMember", null)
-                        .WithMany("UserRoles")
-                        .HasForeignKey("ServerMemberId");
 
                     b.HasOne("Domain.Entities.AppUser", "User")
                         .WithMany()
@@ -831,14 +824,7 @@ namespace Persistence.Migrations
 
                     b.Navigation("Invites");
 
-                    b.Navigation("Roles");
-
                     b.Navigation("ServerMembers");
-                });
-
-            modelBuilder.Entity("Domain.Entities.ServerMember", b =>
-                {
-                    b.Navigation("UserRoles");
                 });
 #pragma warning restore 612, 618
         }

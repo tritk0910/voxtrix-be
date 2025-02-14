@@ -10,7 +10,7 @@ public class UserProfile : Profile
     {
         CreateMap<UserDto, AppUser>()
             .ReverseMap();
-        CreateMap<UserDetailDto, AppUser>()
+        CreateMap<UserDetailsDto, AppUser>()
             .ReverseMap();
         CreateMap<UserEditDto, AppUser>()
             .ReverseMap();

@@ -52,10 +52,10 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
             x.UserName == loginDto.UsernameOrEmail.ToLower() || x.Email == loginDto.UsernameOrEmail.ToLower());
     }
 
-    public async Task<UserDetailDto> GetUserByIdAsync(string id)
+    public async Task<UserDetailsDto> GetUserByIdAsync(string id)
     {
         var user = await context.Users.FirstOrDefaultAsync(x => x.Id == id);
-        var result = mapper.Map<UserDetailDto>(user);
+        var result = mapper.Map<UserDetailsDto>(user);
         return result;
     }
 
@@ -69,5 +69,15 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
 
         await context.SaveChangesAsync();
         return "User updated successfully";
+    }
+
+    public async Task<string> DeleteUserAsync(string userId)
+    {
+        var user = await context.Users.FirstOrDefaultAsync(x => x.Id == userId);
+        if (user == null) return "User not found";
+
+        context.Users.Remove(user);
+        await context.SaveChangesAsync();
+        return "User deleted successfully";
     }
 }

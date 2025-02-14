@@ -5,7 +5,7 @@ namespace Domain.Entities;
 public class Role
 {
     [Key]
-    public string RoleId { get; set; }
+    public string RoleId { get; set; } = Guid.NewGuid().ToString();
     [StringLength(100)]
     public string RoleName { get; set; }
     public string Permissions { get; set; }

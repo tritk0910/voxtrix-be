@@ -5,7 +5,7 @@ namespace Domain.Entities;
 public class Reaction
 {
     [Key]
-    public string ReactionId { get; set; }
+    public string ReactionId { get; set; } = Guid.NewGuid().ToString();
     public string MessageId { get; set; }
     public Message Message { get; set; }
     public string UserId { get; set; }

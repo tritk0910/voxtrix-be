@@ -5,7 +5,7 @@ namespace Domain.Entities;
 public class Channel
 {
     [Key]
-    public string ChannelId { get; set; }
+    public string ChannelId { get; set; } = Guid.NewGuid().ToString();
     public string Description { get; set; }
     public string ChannelName { get; set; }
     public string ServerId { get; set; }

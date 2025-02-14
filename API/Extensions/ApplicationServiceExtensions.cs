@@ -21,6 +21,8 @@ public static class ApplicationServiceExtensions
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IServerRepository, ServerRepository>();
+        services.AddScoped<IInviteRepository, InviteRepository>();
         services.AddStackExchangeRedisCache(options =>
         {
             options.Configuration = configuration.GetConnectionString("Cache");

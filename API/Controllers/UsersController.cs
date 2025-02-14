@@ -2,13 +2,15 @@ using Application.Core;
 using Application.DTOs.Users;
 using Application.Interfaces;
 using AutoMapper;
+using Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
 [Authorize]
-public class UsersController(IUserRepository userRepository, IMapper mapper) : BaseApiController
+public partial class UsersController(UserManager<AppUser> userManager, IUserRepository userRepository, IMapper mapper) : BaseApiController
 {
     [HttpGet]
     public async Task<ActionResult<Result<PagedResult<UserDto>>>> GetUsersAsync([FromBody] DefaultParams defaultParams)
@@ -27,18 +29,18 @@ public class UsersController(IUserRepository userRepository, IMapper mapper) : B
     }
 
     [HttpGet("details")]
-    public async Task<ActionResult<Result<UserDetailDto>>> GetUserAsync([FromQuery] string userId)
+    public async Task<ActionResult<Result<UserDetailsDto>>> GetUserAsync([FromQuery] string userId)
     {
         var user = await userRepository.GetUserByIdAsync(userId);
         if (user == null)
         {
-            return NotFound(Result<UserDetailDto>.FailureResult("User not found"));
+            return NotFound(Result<UserDetailsDto>.FailureResult("User not found"));
         }
-        var result = mapper.Map<UserDetailDto>(user);
-        return Ok(Result<UserDetailDto>.SuccessResult(result));
+        var result = mapper.Map<UserDetailsDto>(user);
+        return Ok(Result<UserDetailsDto>.SuccessResult(result));
     }
 
-    [HttpPut("edit")]
+    [HttpPut]
     public async Task<ActionResult<Result<string>>> EditUserAsync(UserEditDto userEditDto)
     {
         var result = await userRepository.EditUserAsync(userEditDto);
@@ -47,5 +49,16 @@ public class UsersController(IUserRepository userRepository, IMapper mapper) : B
             return NotFound(Result<string>.FailureResult(result));
         }
         return Ok(Result<UserEditDto>.SuccessResult(userEditDto, result));
+    }
+
+    [HttpDelete]
+    public async Task<ActionResult<Result<string>>> DeleteUserAsync([FromQuery] string userId)
+    {
+        var result = await userRepository.DeleteUserAsync(userId);
+        if (result == "User not found")
+        {
+            return NotFound(Result<string>.FailureResult(result));
+        }
+        return Ok(Result<string>.SuccessResult(result, "User deleted successfully"));
     }
 }
