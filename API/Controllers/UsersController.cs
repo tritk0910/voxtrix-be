@@ -41,21 +41,20 @@ public partial class UsersController(UserManager<AppUser> userManager, IUserRepo
     }
 
     [HttpPut]
-    public async Task<ActionResult<Result<string>>> EditUserAsync(UserEditDto userEditDto)
+    public async Task<ActionResult<Result<UserDetailsDto>>> EditUserAsync(UserEditDto userEditDto)
     {
         var result = await userRepository.EditUserAsync(userEditDto);
-        if (result == "User not found")
-        {
-            return NotFound(Result<string>.FailureResult(result));
-        }
-        return Ok(Result<UserEditDto>.SuccessResult(userEditDto, result));
+        if (!result.Success) return NotFound(result);
+
+        return Ok(result);
     }
 
     [HttpDelete]
-    public async Task<ActionResult<Result<string>>> DeleteUserAsync([FromQuery] string userId)
+    public async Task<ActionResult<Result<UserDetailsDto>>> DeleteUserAsync([FromQuery] string userId)
     {
         var result = await userRepository.DeleteUserAsync(userId);
-        if (result == "User deleted successfully") return Ok(Result<string>.SuccessResult(result, "User deleted successfully"));
-        return NotFound(Result<string>.FailureResult(result));
+        if (!result.Success) return NotFound(result);
+
+        return Ok(result);
     }
 }

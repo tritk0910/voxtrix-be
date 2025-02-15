@@ -32,30 +32,36 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
         return result;
     }
 
-    public async Task<string> EditUserAsync(UserEditDto UserEditDto)
+    public async Task<Result<UserDetailsDto>> EditUserAsync(UserEditDto userEditDto)
     {
-        var user = await context.Users.FirstOrDefaultAsync(x => x.Id == UserEditDto.Id);
+        var user = await context.Users.FirstOrDefaultAsync(x => x.Id == userEditDto.Id);
+        if (user == null) return Result<UserDetailsDto>.FailureResult("User not found");
 
-        if (user == null) return "User not found";
+        mapper.Map(userEditDto, user);
+        var result = await context.SaveChangesAsync() > 0;
 
-        mapper.Map(UserEditDto, user);
+        if (!result) return Result<UserDetailsDto>.FailureResult("Failed to update user");
 
-        await context.SaveChangesAsync();
-        return "User updated successfully";
+        var userDetailsDto = mapper.Map<UserDetailsDto>(user);
+        return Result<UserDetailsDto>.SuccessResult(userDetailsDto, "User updated successfully");
     }
 
-    public async Task<string> DeleteUserAsync(string userId)
+    public async Task<Result<bool>> DeleteUserAsync(string userId)
     {
         var user = await context.Users
             .Include(sv => sv.OwnedServers)
             .FirstOrDefaultAsync(x => x.Id == userId);
 
-        if (user == null) return "User not found";
-        if (user.OwnedServers.Count != 0) return "User owns servers, please transfer ownership or delete the servers before deleting";
+        if (user == null) return Result<bool>.FailureResult("User not found");
+        if (user.OwnedServers.Count != 0) return Result<bool>.FailureResult("User owns servers, please transfer ownership or delete the servers before deleting");
 
         context.Users.Remove(user);
-        await context.SaveChangesAsync();
-        return "User deleted successfully";
+        var result = await context.SaveChangesAsync() > 0;
+
+        if (!result) return Result<bool>.FailureResult("Failed to delete user");
+
+        var userDetailsDto = mapper.Map<UserDetailsDto>(user);
+        return Result<bool>.SuccessResult(true, "User deleted successfully");
     }
 
 
@@ -75,26 +81,26 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
         return await Task.FromResult(friendsQuery);
     }
 
-    public async Task<string> SendFriendRequestAsync(string userId, string targetUsername)
+    public async Task<Result<FriendResponseDto>> SendFriendRequestAsync(string userId, string targetUsername)
     {
         var user = await context.Users
             .Include(f => f.Friends)
             .Include(b => b.BlockedUsers)
             .FirstOrDefaultAsync(x => x.Id == userId);
-        if (user == null) return "User not found";
+        if (user == null) return Result<FriendResponseDto>.FailureResult("User not found");
 
         var targetUser = await context.Users
             .Include(b => b.BlockedUsers)
             .FirstOrDefaultAsync(x => x.UserName == targetUsername);
-        if (targetUser == null) return "Target user not found";
+        if (targetUser == null) return Result<FriendResponseDto>.FailureResult("Target user not found");
 
-        if (userId == targetUser.Id) return "You cannot send friend request to yourself";
+        if (userId == targetUser.Id) return Result<FriendResponseDto>.FailureResult("You cannot send friend request to yourself");
 
         var userBlock = user.BlockedUsers.Any(b => b.BlockedUserId == targetUser.Id);
-        if (userBlock) return "You have blocked this user";
+        if (userBlock) return Result<FriendResponseDto>.FailureResult("You have blocked this user");
 
         var userIsBlocked = targetUser.BlockedUsers.Any(b => b.BlockedUserId == userId);
-        if (userIsBlocked) return "You can't send friend request to this user";
+        if (userIsBlocked) return Result<FriendResponseDto>.FailureResult("You can't send friend request to this user");
 
         var existingRequest = await context.Friends.FirstOrDefaultAsync(f =>
             (f.UserId == userId && f.TargetId == targetUser.Id) ||
@@ -105,15 +111,19 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
             if (existingRequest.UserId == targetUser.Id && existingRequest.TargetId == userId &&
                 (existingRequest.Status == Status.Pending || existingRequest.Status == Status.Ignored))
             {
-                if (userBlock) return "Cannot accept friend request, you have blocked this user";
-                if (userIsBlocked) return "Cannot send friend request";
+                if (userBlock) return Result<FriendResponseDto>.FailureResult("Cannot accept friend request, you have blocked this user");
+                if (userIsBlocked) return Result<FriendResponseDto>.FailureResult("Cannot send friend request");
                 existingRequest.Status = Status.Accepted;
 
                 var result = await context.SaveChangesAsync() > 0;
-                return result ? "Friend request accepted" : "Failed to accept friend request";
+                if (!result) return Result<FriendResponseDto>.FailureResult("Failed to accept friend request");
+
+                var friendRequestDto = mapper.Map<FriendResponseDto>(existingRequest);
+
+                return Result<FriendResponseDto>.SuccessResult(friendRequestDto, "Friend request accepted");
             }
-            if (existingRequest.Status == Status.Accepted) return "You are already friends";
-            return "Friend request already sent";
+            if (existingRequest.Status == Status.Accepted) return Result<FriendResponseDto>.FailureResult("You are already friends");
+            return Result<FriendResponseDto>.FailureResult("Friend request already sent");
         }
 
         var friendRequest = new Friend
@@ -125,72 +135,88 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
 
         context.Friends.Add(friendRequest);
         var saveResult = await context.SaveChangesAsync() > 0;
-        return saveResult ? "Friend request sent" : "Failed to send friend request";
+        if (!saveResult) return Result<FriendResponseDto>.FailureResult("Failed to send friend request");
+
+        var newFriendRequestDto = mapper.Map<FriendResponseDto>(friendRequest);
+
+        return Result<FriendResponseDto>.SuccessResult(newFriendRequestDto, "Friend request sent");
     }
 
-    public async Task<string> IgnoreFriendRequestAsync(string requestId)
+    public async Task<Result<FriendResponseDto>> IgnoreFriendRequestAsync(string requestId)
     {
         var friendRequest = await context.Friends
             .FirstOrDefaultAsync(f => f.FriendId == requestId && f.Status == Status.Pending);
 
-        if (friendRequest == null) return "Friend request not found";
+        if (friendRequest == null) return Result<FriendResponseDto>.FailureResult("Friend request not found");
 
         friendRequest.Status = Status.Ignored;
-        var result = await context.SaveChangesAsync() > 0;
-        return result ? "Friend request ignored" : "Failed to ignore friend request";
+        var saveResult = await context.SaveChangesAsync() > 0;
+        if (!saveResult) return Result<FriendResponseDto>.FailureResult("Failed to ignore friend request");
+
+        var friendRequestDto = mapper.Map<FriendResponseDto>(friendRequest);
+
+        return Result<FriendResponseDto>.SuccessResult(friendRequestDto, "Friend request ignored");
     }
 
-    public async Task<string> AcceptFriendRequestAsync(string requestId)
+    public async Task<Result<FriendResponseDto>> AcceptFriendRequestAsync(string requestId)
     {
         var friendRequest = await context.Friends
             .FirstOrDefaultAsync(f => f.FriendId == requestId && f.Status == Status.Pending);
 
-        if (friendRequest == null) return "Friend request not found";
+        if (friendRequest == null) return Result<FriendResponseDto>.FailureResult("Friend request not found");
 
         var user = await context.Users.Include(b => b.BlockedUsers).FirstOrDefaultAsync(x => x.Id == friendRequest.UserId);
         var targetUser = await context.Users.Include(b => b.BlockedUsers).FirstOrDefaultAsync(x => x.Id == friendRequest.TargetId);
 
-        if (user == null || targetUser == null) return "User not found";
+        if (user == null || targetUser == null) return Result<FriendResponseDto>.FailureResult("User not found");
 
         bool isBlocked = user.BlockedUsers.Any(b => b.BlockedUserId == targetUser.Id) ||
                 targetUser.BlockedUsers.Any(b => b.BlockedUserId == user.Id);
 
-        if (isBlocked) return "Cannot accept friend request";
+        if (isBlocked) return Result<FriendResponseDto>.FailureResult("Cannot accept friend request");
 
         friendRequest.Status = Status.Accepted;
-        var result = await context.SaveChangesAsync() > 0;
-        return result ? "Friend request accepted" : "Failed to accept friend request";
+        var saveResult = await context.SaveChangesAsync() > 0;
+        if (!saveResult) return Result<FriendResponseDto>.FailureResult("Failed to accept friend request");
+
+        var friendRequestDto = mapper.Map<FriendResponseDto>(friendRequest);
+
+        return Result<FriendResponseDto>.SuccessResult(friendRequestDto, "Friend request accepted");
     }
 
-    public async Task<string> RemoveFriendRequestAsync(string requestId)
+    public async Task<Result<bool>> RemoveFriendRequestAsync(string requestId)
     {
         var friendRequest = await context.Friends
             .FirstOrDefaultAsync(f => f.FriendId == requestId);
 
-        if (friendRequest == null) return "Friend request not found";
+        if (friendRequest == null) return Result<bool>.FailureResult("Friend request not found");
 
         context.Friends.Remove(friendRequest);
         var result = await context.SaveChangesAsync() > 0;
-        return result ? "Friend request removed" : "Failed to remove friend request";
+        if (!result) return Result<bool>.FailureResult("Failed to remove friend request");
+
+        return Result<bool>.SuccessResult(true, "Friend request removed successfully");
     }
 
-    public async Task<string> RemoveFriendAsync(string userId, string targetId)
+    public async Task<Result<bool>> RemoveFriendAsync(string userId, string targetId)
     {
         var friendship = await context.Friends
             .FirstOrDefaultAsync(f => f.UserId == userId && f.TargetId == targetId || f.UserId == targetId && f.TargetId == userId && f.Status == Status.Accepted);
 
-        if (friendship == null) return "You are not friends with this user";
+        if (friendship == null) return Result<bool>.FailureResult("You are not friends with this user");
 
         context.Friends.Remove(friendship);
         var result = await context.SaveChangesAsync() > 0;
-        return result ? "Friend removed successfully" : "Failed to remove friend";
+        if (!result) return Result<bool>.FailureResult("Failed to remove friend");
+
+        return Result<bool>.SuccessResult(true, "Friend removed successfully");
     }
 
-    public async Task<IQueryable<FriendRequestDto>> GetPendingFriendRequestsAsync(string userId, DefaultParams defaultParams)
+    public async Task<IQueryable<FriendDto>> GetPendingFriendRequestsAsync(string userId, DefaultParams defaultParams)
     {
         var query = context.Friends
             .Where(f => f.UserId == userId && f.Status == Status.Pending || f.Status == Status.Ignored)
-            .Select(f => new FriendRequestDto
+            .Select(f => new FriendDto
             {
                 RequestId = f.FriendId,
                 UserId = f.TargetId,
@@ -209,11 +235,11 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
         return await Task.FromResult(query);
     }
 
-    public async Task<IQueryable<FriendRequestDto>> GetIncomingFriendRequestsAsync(string userId, DefaultParams defaultParams)
+    public async Task<IQueryable<FriendDto>> GetIncomingFriendRequestsAsync(string userId, DefaultParams defaultParams)
     {
         var query = context.Friends
             .Where(f => f.TargetId == userId && f.Status == Status.Pending)
-            .Select(f => new FriendRequestDto
+            .Select(f => new FriendDto
             {
                 RequestId = f.FriendId,
                 UserId = f.UserId,
@@ -249,39 +275,59 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
         return await Task.FromResult(query);
     }
 
-    public async Task<string> BlockUserAsync(string userId, string targetId)
+    public async Task<Result<BlockedUserDto>> BlockUserAsync(string userId, string targetId)
     {
+        if (userId == targetId) return Result<BlockedUserDto>.FailureResult("Users cannot block themselves");
+
         var user = await context.Users.FirstOrDefaultAsync(x => x.Id == userId);
-        if (user == null) return "User not found";
+        if (user == null) return Result<BlockedUserDto>.FailureResult("User not found");
 
         var targetUser = await context.Users.FirstOrDefaultAsync(x => x.Id == targetId);
-        if (targetUser == null) return "Target user not found";
+        if (targetUser == null) return Result<BlockedUserDto>.FailureResult("Target user not found");
 
         if (await context.UserBlocks.AnyAsync(ub => ub.UserId == userId && ub.BlockedUserId == targetId))
-            return "User already blocked";
+            return Result<BlockedUserDto>.FailureResult("User already blocked");
 
-        // Remove friendship if exists when blocking user
+        // Remove friend if exists when blocking user
         context.Friends.RemoveRange(context.Friends.Where(f =>
             (f.UserId == userId && f.TargetId == targetId) ||
             (f.UserId == targetId && f.TargetId == userId)));
 
-        context.UserBlocks.Add(new UserBlock
+        var userBlock = new UserBlock
         {
             UserId = userId,
             BlockedUserId = targetId
-        });
+        };
 
-        return await context.SaveChangesAsync() > 0 ? "User blocked" : "Failed to block user";
+        context.UserBlocks.Add(userBlock);
+        var saveResult = await context.SaveChangesAsync() > 0;
+
+        if (!saveResult) return Result<BlockedUserDto>.FailureResult("Failed to block user");
+
+        var blockedUserDto = new BlockedUserDto
+        {
+            BlockId = userBlock.UserBlockId,
+            UserId = targetUser.Id,
+            DisplayName = targetUser.DisplayName,
+            Username = targetUser.UserName,
+            Avatar = targetUser.Avatar
+        };
+
+        return Result<BlockedUserDto>.SuccessResult(blockedUserDto, "User blocked successfully");
     }
 
-    public async Task<string> UnblockUserAsync(string blockId)
+    public async Task<Result<bool>> UnblockUserAsync(string blockId)
     {
         var userBlock = await context.UserBlocks
             .FirstOrDefaultAsync(ub => ub.UserBlockId == blockId);
 
-        if (userBlock == null) return "User block not found";
+        if (userBlock == null) return Result<bool>.FailureResult("User block not found");
 
         context.UserBlocks.Remove(userBlock);
-        return await context.SaveChangesAsync() > 0 ? "User unblocked" : "Failed to unblock user";
+        var saveResult = await context.SaveChangesAsync() > 0;
+
+        if (!saveResult) return Result<bool>.FailureResult("Failed to unblock user");
+
+        return Result<bool>.SuccessResult(true, "User unblocked successfully");
     }
 }

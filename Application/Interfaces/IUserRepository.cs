@@ -7,17 +7,17 @@ public interface IUserRepository
 {
     Task<IQueryable<UserDto>> GetAllUsersAsync(DefaultParams defaultParams);
     Task<UserDetailsDto> GetUserByIdAsync(string id);
-    Task<string> EditUserAsync(UserEditDto userEditDto);
-    Task<string> DeleteUserAsync(string userId);
+    Task<Result<UserDetailsDto>> EditUserAsync(UserEditDto userEditDto);
+    Task<Result<bool>> DeleteUserAsync(string userId);
     Task<IQueryable<UserBasicDto>> GetFriendsAsync(string userId, DefaultParams defaultParams);
-    Task<string> SendFriendRequestAsync(string userId, string targetUsername);
-    Task<string> IgnoreFriendRequestAsync(string requestId);
-    Task<string> RemoveFriendRequestAsync(string requestId);
-    Task<string> AcceptFriendRequestAsync(string requestId);
-    Task<string> RemoveFriendAsync(string userId, string targetId);
-    Task<IQueryable<FriendRequestDto>> GetPendingFriendRequestsAsync(string userId, DefaultParams defaultParams);
-    Task<IQueryable<FriendRequestDto>> GetIncomingFriendRequestsAsync(string userId, DefaultParams defaultParams);
+    Task<Result<FriendResponseDto>> SendFriendRequestAsync(string userId, string targetUsername);
+    Task<Result<FriendResponseDto>> IgnoreFriendRequestAsync(string requestId);
+    Task<Result<bool>> RemoveFriendRequestAsync(string requestId);
+    Task<Result<FriendResponseDto>> AcceptFriendRequestAsync(string requestId);
+    Task<Result<bool>> RemoveFriendAsync(string userId, string targetId);
+    Task<IQueryable<FriendDto>> GetPendingFriendRequestsAsync(string userId, DefaultParams defaultParams);
+    Task<IQueryable<FriendDto>> GetIncomingFriendRequestsAsync(string userId, DefaultParams defaultParams);
     Task<IQueryable<BlockedUserDto>> GetBlockedUsersAsync(string userId, DefaultParams defaultParams);
-    Task<string> BlockUserAsync(string userId, string targetId);
-    Task<string> UnblockUserAsync(string blockId);
+    Task<Result<BlockedUserDto>> BlockUserAsync(string userId, string targetId);
+    Task<Result<bool>> UnblockUserAsync(string blockId);
 }

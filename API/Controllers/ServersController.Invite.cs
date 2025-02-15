@@ -14,21 +14,21 @@ public partial class ServersController
     }
 
     [HttpPut("invite")]
-    public async Task<ActionResult<Result<bool>>> UpdateInvite([FromBody] UpdateInviteDto updateInviteDto)
+    public async Task<ActionResult<Result<InviteDto>>> UpdateInvite([FromBody] UpdateInviteDto updateInviteDto)
     {
         var result = await serverRepository.UpdateInviteAsync(updateInviteDto);
-        if (result) return Ok(Result<bool>.SuccessResult(true, "Invite updated"));
+        if (!result.Success) return BadRequest(result);
 
-        return BadRequest(Result<bool>.FailureResult("Invite not found"));
+        return Ok(result);
     }
 
     [HttpPost("invite/pause")]
-    public async Task<ActionResult<Result<string>>> PauseAllInvites([FromQuery] string serverId)
+    public async Task<ActionResult<Result<bool>>> PauseAllInvites([FromQuery] string serverId)
     {
         var result = await serverRepository.PauseInviteAsync(serverId);
-        if (result == "Invites paused") return Ok(Result<bool>.SuccessResult(true, result));
+        if (!result.Success) return BadRequest(result);
 
-        return BadRequest(Result<bool>.FailureResult(result));
+        return Ok(result);
     }
 
     [HttpDelete]
@@ -36,8 +36,8 @@ public partial class ServersController
     public async Task<ActionResult<Result<bool>>> DeleteInvite([FromQuery] string inviteId)
     {
         var result = await serverRepository.DeleteInviteAsync(inviteId);
-        if (result) return Ok(Result<bool>.SuccessResult(true, "Invite deleted"));
+        if (!result.Success) return BadRequest(result);
 
-        return BadRequest(Result<bool>.FailureResult("Invite not found"));
+        return Ok(result);
     }
 }

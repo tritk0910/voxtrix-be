@@ -25,83 +25,83 @@ public partial class UsersController
     }
 
     [HttpGet("friends/pending")]
-    public async Task<ActionResult<Result<PagedResult<FriendRequestDto>>>> GetPendingFriendRequestsAsync([FromQuery] string userId, [FromBody] DefaultParams defaultParams)
+    public async Task<ActionResult<Result<PagedResult<FriendDto>>>> GetPendingFriendRequestsAsync([FromQuery] string userId, [FromBody] DefaultParams defaultParams)
     {
         var pendingRequests = await userRepository.GetPendingFriendRequestsAsync(userId, defaultParams);
-        if (pendingRequests == null) return NotFound(Result<PagedResult<FriendRequestDto>>.FailureResult("User not found"));
+        if (pendingRequests == null) return NotFound(Result<PagedResult<FriendDto>>.FailureResult("User not found"));
 
-        var pagedRequests = await PagedList<FriendRequestDto>.CreateAsync(pendingRequests, defaultParams.PageNumber, defaultParams.PageSize);
+        var pagedRequests = await PagedList<FriendDto>.CreateAsync(pendingRequests, defaultParams.PageNumber, defaultParams.PageSize);
 
-        var result = new PagedResult<FriendRequestDto>
+        var result = new PagedResult<FriendDto>
         {
             Items = pagedRequests,
             CurrentPage = pagedRequests.CurrentPage,
             TotalPages = pagedRequests.TotalPages
         };
 
-        return Ok(Result<PagedResult<FriendRequestDto>>.SuccessResult(result));
+        return Ok(Result<PagedResult<FriendDto>>.SuccessResult(result));
     }
 
     [HttpGet("friends/incoming")]
-    public async Task<ActionResult<Result<PagedResult<FriendRequestDto>>>> GetIncomingFriendRequestsAsync([FromQuery] string userId, [FromBody] DefaultParams defaultParams)
+    public async Task<ActionResult<Result<PagedResult<FriendDto>>>> GetIncomingFriendRequestsAsync([FromQuery] string userId, [FromBody] DefaultParams defaultParams)
     {
         var incomingRequests = await userRepository.GetIncomingFriendRequestsAsync(userId, defaultParams);
-        if (incomingRequests == null) return NotFound(Result<PagedResult<FriendRequestDto>>.FailureResult("User not found"));
+        if (incomingRequests == null) return NotFound(Result<PagedResult<FriendDto>>.FailureResult("User not found"));
 
-        var pagedRequests = await PagedList<FriendRequestDto>.CreateAsync(incomingRequests, defaultParams.PageNumber, defaultParams.PageSize);
+        var pagedRequests = await PagedList<FriendDto>.CreateAsync(incomingRequests, defaultParams.PageNumber, defaultParams.PageSize);
 
-        var result = new PagedResult<FriendRequestDto>
+        var result = new PagedResult<FriendDto>
         {
             Items = pagedRequests,
             CurrentPage = pagedRequests.CurrentPage,
             TotalPages = pagedRequests.TotalPages
         };
 
-        return Ok(Result<PagedResult<FriendRequestDto>>.SuccessResult(result));
+        return Ok(Result<PagedResult<FriendDto>>.SuccessResult(result));
     }
 
     [HttpPost("friends/request")]
-    public async Task<ActionResult<Result<string>>> SendFriendRequest([FromQuery] string userId, string targetUsername)
+    public async Task<ActionResult<Result<FriendResponseDto>>> SendFriendRequest([FromQuery] string userId, string targetUsername)
     {
         var result = await userRepository.SendFriendRequestAsync(userId, targetUsername);
-        if (result == "Friend request sent" || result == "Friend request accepted") return Ok(Result<string>.SuccessResult("", result));
+        if (!result.Success) return BadRequest(result);
 
-        return BadRequest(Result<string>.FailureResult(result));
+        return Ok(result);
     }
 
     [HttpPut("friends/request")]
-    public async Task<ActionResult<Result<string>>> IgnoreFriendRequest([FromQuery] string requestId)
+    public async Task<ActionResult<Result<FriendResponseDto>>> IgnoreFriendRequest([FromQuery] string requestId)
     {
         var result = await userRepository.IgnoreFriendRequestAsync(requestId);
-        if (result == "Friend request ignored") return Ok(Result<string>.SuccessResult("", result));
+        if (!result.Success) return BadRequest(result);
 
-        return BadRequest(Result<string>.FailureResult(result));
+        return Ok(result);
     }
 
     [HttpDelete("friends/request")]
-    public async Task<ActionResult<Result<string>>> CancelFriendRequest([FromQuery] string requestId)
+    public async Task<ActionResult<Result<bool>>> CancelFriendRequest([FromQuery] string requestId)
     {
         var result = await userRepository.RemoveFriendRequestAsync(requestId);
-        if (result == "Friend removed successfully") return Ok(Result<string>.SuccessResult("", result));
+        if (!result.Success) return BadRequest(result);
 
-        return BadRequest(Result<string>.FailureResult(result));
+        return Ok(result);
     }
 
     [HttpPost("friends")]
-    public async Task<ActionResult<Result<string>>> AcceptFriendRequest([FromQuery] string requestId)
+    public async Task<ActionResult<Result<FriendResponseDto>>> AcceptFriendRequest([FromQuery] string requestId)
     {
         var result = await userRepository.AcceptFriendRequestAsync(requestId);
-        if (result == "Friend request accepted") return Ok(Result<string>.SuccessResult("", result));
+        if (!result.Success) return BadRequest(result);
 
-        return BadRequest(Result<string>.FailureResult(result));
+        return Ok(result);
     }
 
     [HttpDelete("friends")]
-    public async Task<ActionResult<Result<string>>> RemoveFriend([FromQuery] string userId, string targetId)
+    public async Task<ActionResult<Result<bool>>> RemoveFriend([FromQuery] string userId, string targetId)
     {
         var result = await userRepository.RemoveFriendAsync(userId, targetId);
-        if (result == "Friend removed") return Ok(Result<string>.SuccessResult("", result));
+        if (!result.Success) return BadRequest(result);
 
-        return BadRequest(Result<string>.FailureResult(result));
+        return Ok(result);
     }
 }

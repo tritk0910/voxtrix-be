@@ -25,22 +25,20 @@ public partial class UsersController
     }
 
     [HttpPost("block")]
-    public async Task<ActionResult<Result<string>>> BlockUserAsync([FromQuery] string userId, [FromQuery] string targetId)
+    public async Task<ActionResult<Result<BlockedUserDto>>> BlockUserAsync([FromQuery] string userId, [FromQuery] string targetId)
     {
         var result = await userRepository.BlockUserAsync(userId, targetId);
-        if (result == null) return NotFound(Result<string>.FailureResult("User not found"));
-        if (result == "User already blocked") return BadRequest(Result<string>.FailureResult("User already blocked"));
+        if (!result.Success) return BadRequest(result);
 
-        return Ok(Result<string>.SuccessResult("", result));
+        return Ok(result);
     }
 
     [HttpDelete("block")]
-    public async Task<ActionResult<Result<string>>> UnblockUserAsync([FromQuery] string blockId)
+    public async Task<ActionResult<Result<bool>>> UnblockUserAsync([FromQuery] string blockId)
     {
         var result = await userRepository.UnblockUserAsync(blockId);
-        if (result == null) return NotFound(Result<string>.FailureResult("User not found"));
-        if (result == "User not blocked") return BadRequest(Result<string>.FailureResult("User not blocked"));
+        if (!result.Success) return NotFound(result);
 
-        return Ok(Result<string>.SuccessResult("", result));
+        return Ok(result);
     }
 }

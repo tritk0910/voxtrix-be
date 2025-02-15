@@ -16,6 +16,10 @@ public class UserProfile : Profile
             .ReverseMap();
         CreateMap<UserEditDto, AppUser>()
             .ReverseMap();
+        CreateMap<Friend, FriendResponseDto>()
+            .ForMember(dest => dest.RequestId, opt => opt.MapFrom(src => src.FriendId))
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+            .ReverseMap();
         CreateMap<Friend, UserBasicDto>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.TargetId))
             .ReverseMap();

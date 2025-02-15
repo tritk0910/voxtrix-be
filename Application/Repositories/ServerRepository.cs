@@ -1,12 +1,11 @@
+using Application.Core;
 using Application.DTOs.Invites;
 using Application.DTOs.Servers;
-using Application.DTOs.Users;
 using Application.Interfaces;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using Npgsql.Internal;
 using Persistence;
 
 namespace Application.Repositories;
@@ -71,16 +70,18 @@ public class ServerRepository(DataContext context, IMapper mapper) : IServerRepo
         return server;
     }
 
-    public async Task<bool> DeleteServer(string serverId)
+    public async Task<Result<bool>> DeleteServer(string serverId)
     {
         var server = await context.Servers.FindAsync(serverId);
 
-        if (server == null) return false;
+        if (server == null) return Result<bool>.FailureResult("Server not found");
 
         context.Servers.Remove(server);
-        await context.SaveChangesAsync();
+        var result = await context.SaveChangesAsync() > 0;
 
-        return true;
+        if (!result) return Result<bool>.FailureResult("Failed to delete server");
+
+        return Result<bool>.SuccessResult(true, "Server deleted successfully");
     }
 
     public async Task<InviteDto> CreateInvite(CreateInviteDto createInviteDto)
@@ -100,23 +101,26 @@ public class ServerRepository(DataContext context, IMapper mapper) : IServerRepo
         return mapper.Map<InviteDto>(invite);
     }
 
-    public async Task<bool> UpdateInviteAsync(UpdateInviteDto updateInviteDto)
+    public async Task<Result<InviteDto>> UpdateInviteAsync(UpdateInviteDto updateInviteDto)
     {
         var invite = await context.Invites.FirstOrDefaultAsync(i => i.InviteId == updateInviteDto.InviteId);
 
-        if (invite == null) return false;
+        if (invite == null) return Result<InviteDto>.FailureResult("Invite not found");
         mapper.Map(updateInviteDto, invite);
 
         var result = await context.SaveChangesAsync() > 0;
 
-        return result;
+        if (!result) return Result<InviteDto>.FailureResult("Failed to update invite");
+
+        var inviteDto = mapper.Map<InviteDto>(invite);
+        return Result<InviteDto>.SuccessResult(inviteDto, "Invite updated successfully");
     }
 
-    public async Task<string> PauseInviteAsync(string serverId)
+    public async Task<Result<bool>> PauseInviteAsync(string serverId)
     {
         var invites = await context.Invites.Where(i => i.ServerId == serverId).ToListAsync();
 
-        if (invites.Count == 0) return "No invites found";
+        if (invites.Count == 0) return Result<bool>.FailureResult("No invites found");
 
         foreach (var invite in invites)
         {
@@ -125,24 +129,24 @@ public class ServerRepository(DataContext context, IMapper mapper) : IServerRepo
 
         var result = await context.SaveChangesAsync() > 0;
 
-        if (result) return "Invites paused";
-        return "Failed to pause invites";
+        if (!result) return Result<bool>.FailureResult("Failed to pause invites");
+
+        return Result<bool>.SuccessResult(true, "Invites paused");
     }
 
-    public async Task<bool> DeleteInviteAsync(string inviteId)
+    public async Task<Result<bool>> DeleteInviteAsync(string inviteId)
     {
-        var result = await context.Invites
-            .Where(i => i.InviteId == inviteId)
-            .FirstOrDefaultAsync();
+        var invite = await context.Invites
+            .FirstOrDefaultAsync(i => i.InviteId == inviteId);
 
-        if (result != null)
-        {
-            context.Invites.Remove(result);
-            await context.SaveChangesAsync();
-            return true;
-        }
+        if (invite == null) return Result<bool>.FailureResult("Invite not found");
 
-        return false;
+        context.Invites.Remove(invite);
+        var result = await context.SaveChangesAsync() > 0;
+
+        if (!result) return Result<bool>.FailureResult("Failed to delete invite");
+
+        return Result<bool>.SuccessResult(true, "Invite deleted successfully");
     }
 
     private static string GenerateRandomString()
