@@ -12,6 +12,10 @@ public class ServerProfile : Profile
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.ServerId))
             .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.ServerName))
             .ReverseMap();
+        CreateMap<Server, ServerTransferDto>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.ServerId))
+            .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.ServerName))
+            .ReverseMap();
         CreateMap<CreateServerDto, Server>()
             .ForMember(dest => dest.ServerName, opt => opt.MapFrom(src => src.Name))
             .ReverseMap();

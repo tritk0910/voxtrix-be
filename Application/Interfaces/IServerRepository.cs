@@ -14,5 +14,6 @@ public interface IServerRepository
     Task<Result<InviteDto>> UpdateInviteAsync(UpdateInviteDto updateInviteDto);
     Task<Result<bool>> PauseInviteAsync(string serverId);
     Task<Result<bool>> DeleteInviteAsync(string inviteId);
-    Task<Result<bool>> DeleteServer(string serverId);
+    Task<Result<bool>> DeleteServer(string userId, string serverId);
+    Task<Result<ServerTransferDto>> TransferOwnership(string userId, string serverId, string newOwnerId);
 }

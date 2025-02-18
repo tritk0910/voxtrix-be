@@ -12,7 +12,6 @@ public class Role
     [StringLength(7)]
     public string Color { get; set; }
     public int Position { get; set; }
-    public string ServerId { get; set; }
-    public Server Server { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public ICollection<ServerRole> ServerRoles { get; set; } = [];
 }

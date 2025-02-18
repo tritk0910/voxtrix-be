@@ -11,6 +11,8 @@ public class Message
     public AppUser User { get; set; }
     public string ChannelId { get; set; }
     public Channel Channel { get; set; }
+    public string RecipientId { get; set; }
+    public AppUser Recipient { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime EditedAt { get; set; }
     public string AttachmentURL { get; set; }

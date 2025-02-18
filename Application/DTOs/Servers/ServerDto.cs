@@ -10,10 +10,15 @@ public class ServerDto
     public string Avatar { get; set; }
 }
 
-public class ServerBasicDto : ServerDto
+
+public class ServerTransferDto : ServerDto
+{
+    public string OwnerId { get; set; }
+}
+
+public class ServerBasicDto : ServerTransferDto
 {
     public string BannerImage { get; set; }
-    public string OwnerId { get; set; }
     public List<ChannelDto> Channels { get; set; }
     public List<ServerMemberDto> Members { get; set; }
 }

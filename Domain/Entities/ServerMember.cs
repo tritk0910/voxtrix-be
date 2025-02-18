@@ -1,7 +1,9 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace Domain.Entities;
 
+[Index(nameof(ServerId), nameof(MemberId), IsUnique = true)]
 public class ServerMember
 {
     [Key]

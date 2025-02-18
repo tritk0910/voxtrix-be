@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers;
 
 [Authorize]
-public partial class ServersController(IServerRepository serverRepository) : BaseApiController
+public partial class ServersController(IServerRepository serverRepository, IChannelRepository channelRepository) : BaseApiController
 {
     [HttpGet("joined-servers")]
     public async Task<ActionResult<Result<List<ServerDto>>>> GetJoinedServersAsync()
@@ -49,7 +49,16 @@ public partial class ServersController(IServerRepository serverRepository) : Bas
     [HttpDelete]
     public async Task<ActionResult<Result<bool>>> DeleteServer([FromQuery] string serverId)
     {
-        var result = await serverRepository.DeleteServer(serverId);
+        var result = await serverRepository.DeleteServer(GetCurrentUserId(), serverId);
+        if (!result.Success) return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpPost("ownership")]
+    public async Task<ActionResult<Result<ServerTransferDto>>> TransferOwnership([FromQuery] string serverId, [FromQuery] string newOwnerId)
+    {
+        var result = await serverRepository.TransferOwnership(GetCurrentUserId(), serverId, newOwnerId);
         if (!result.Success) return BadRequest(result);
 
         return Ok(result);

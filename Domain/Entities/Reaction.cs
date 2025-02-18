@@ -1,7 +1,9 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace Domain.Entities;
 
+[Index(nameof(MessageId), nameof(UserId), IsUnique = true)]
 public class Reaction
 {
     [Key]

@@ -16,8 +16,8 @@ public class ServerRepository(DataContext context, IMapper mapper) : IServerRepo
     {
         var servers = await context.Servers
             .Where(s => s.ServerMembers.Any(sm => sm.MemberId == userId))
-            .ProjectTo<ServerDto>(mapper.ConfigurationProvider)
             .AsNoTracking()
+            .ProjectTo<ServerDto>(mapper.ConfigurationProvider)
             .ToListAsync();
 
         return servers;
@@ -47,10 +47,10 @@ public class ServerRepository(DataContext context, IMapper mapper) : IServerRepo
     {
         var server = await context.Servers
             .Where(s => s.ServerId == serverId)
-            .Include(s => s.ServerMembers)
-            .ThenInclude(sm => sm.Member)
-            .ProjectTo<ServerBasicDto>(mapper.ConfigurationProvider)
             .AsNoTracking()
+            .Include(s => s.ServerMembers)
+                .ThenInclude(sm => sm.Member)
+            .ProjectTo<ServerBasicDto>(mapper.ConfigurationProvider)
             .FirstOrDefaultAsync();
 
         return server;
@@ -60,21 +60,22 @@ public class ServerRepository(DataContext context, IMapper mapper) : IServerRepo
     {
         var server = await context.Servers
             .Where(s => s.ServerId == serverId)
+            .AsNoTracking()
             .Include(s => s.ServerMembers)
                 .ThenInclude(sm => sm.Member)
             .Include(s => s.Invites)
             .ProjectTo<ServerDetailsDto>(mapper.ConfigurationProvider)
-            .AsNoTracking()
             .FirstOrDefaultAsync();
 
         return server;
     }
 
-    public async Task<Result<bool>> DeleteServer(string serverId)
+    public async Task<Result<bool>> DeleteServer(string userId, string serverId)
     {
         var server = await context.Servers.FindAsync(serverId);
-
         if (server == null) return Result<bool>.FailureResult("Server not found");
+
+        if (server.OwnerId != userId) return Result<bool>.FailureResult("You are not the owner of this server");
 
         context.Servers.Remove(server);
         var result = await context.SaveChangesAsync() > 0;
@@ -82,6 +83,29 @@ public class ServerRepository(DataContext context, IMapper mapper) : IServerRepo
         if (!result) return Result<bool>.FailureResult("Failed to delete server");
 
         return Result<bool>.SuccessResult(true, "Server deleted successfully");
+    }
+
+    public async Task<Result<ServerTransferDto>> TransferOwnership(string userId, string serverId, string newOwnerId)
+    {
+        var server = await context.Servers
+            .Include(s => s.ServerMembers)
+            .FirstOrDefaultAsync(s => s.ServerId == serverId);
+        if (server == null) return Result<ServerTransferDto>.FailureResult("Server not found");
+
+        var currentOwner = server.ServerMembers.FirstOrDefault(sm => sm.IsOwner);
+        if (currentOwner == null || currentOwner.MemberId != userId) return Result<ServerTransferDto>.FailureResult("You are not the owner of this server");
+
+        var newOwner = server.ServerMembers.FirstOrDefault(sm => sm.MemberId == newOwnerId);
+        if (newOwner == null) return Result<ServerTransferDto>.FailureResult("New owner is not a member of this server");
+
+        currentOwner.IsOwner = false;
+        newOwner.IsOwner = true;
+
+        var result = await context.SaveChangesAsync() > 0;
+
+        if (!result) return Result<ServerTransferDto>.FailureResult("Failed to transfer ownership");
+
+        return Result<ServerTransferDto>.SuccessResult(mapper.Map<ServerTransferDto>(server), "Ownership transferred successfully");
     }
 
     public async Task<InviteDto> CreateInvite(CreateInviteDto createInviteDto)

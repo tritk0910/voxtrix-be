@@ -6,6 +6,7 @@ namespace Persistence;
 
 public class DataContext(DbContextOptions<DataContext> options) : IdentityDbContext<AppUser>(options)
 {
+    #region DbSets
     public DbSet<Channel> Channels { get; set; }
     public DbSet<Message> Messages { get; set; }
     public DbSet<Reaction> Reactions { get; set; }
@@ -15,11 +16,17 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
     public DbSet<Invite> Invites { get; set; }
     public DbSet<Friend> Friends { get; set; }
     public DbSet<UserBlock> UserBlocks { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
+    public new DbSet<Role> Roles { get; set; }
+    #endregion
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Entity<FriendRequestNotification>().HasBaseType<Notification>();
+
+        #region Configure relationships
         modelBuilder.Entity<AppUser>(e =>
         {
             e.HasIndex(u => u.UserName).IsUnique();
@@ -37,8 +44,6 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
                 .WithMany(s => s.ServerMembers)
                 .HasForeignKey(sm => sm.ServerId)
                 .OnDelete(DeleteBehavior.Cascade);
-            e.HasIndex(sm => new { sm.ServerId, sm.MemberId })
-                .IsUnique();
         });
 
         modelBuilder.Entity<Invite>(e =>
@@ -52,8 +57,6 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
                 .WithMany(u => u.Invites)
                 .HasForeignKey(i => i.AuthorId)
                 .OnDelete(DeleteBehavior.Cascade);
-            e.HasIndex(i => i.InviteCode)
-                .IsUnique();
         });
 
         modelBuilder.Entity<Server>(e =>
@@ -63,23 +66,19 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
                 .WithMany(u => u.OwnedServers)
                 .HasForeignKey(s => s.OwnerId)
                 .OnDelete(DeleteBehavior.Restrict);
-            e.HasIndex(s => s.OwnerId)
-                .IsUnique();
         });
 
         modelBuilder.Entity<Message>(e =>
         {
             e.HasKey(m => m.MessageId);
-            e.HasOne(m => m.User)
-                .WithMany(u => u.Messages)
-                .HasForeignKey(m => m.AuthorId)
-                .OnDelete(DeleteBehavior.Cascade);
             e.HasOne(m => m.Channel)
                 .WithMany(c => c.Messages)
                 .HasForeignKey(m => m.ChannelId)
                 .OnDelete(DeleteBehavior.Cascade);
-            e.HasIndex(m => new { m.ChannelId, m.AuthorId })
-                .IsUnique();
+            e.HasOne(m => m.Recipient)
+                .WithMany(u => u.Messages)
+                .HasForeignKey(m => m.RecipientId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Reaction>(e =>
@@ -93,8 +92,6 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
                 .WithMany(m => m.Reactions)
                 .HasForeignKey(r => r.MessageId)
                 .OnDelete(DeleteBehavior.Cascade);
-            e.HasIndex(r => new { r.MessageId, r.UserId })
-                .IsUnique();
         });
 
         modelBuilder.Entity<ServerBan>(e =>
@@ -108,8 +105,6 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
                 .WithMany(s => s.Bans)
                 .HasForeignKey(sb => sb.ServerId)
                 .OnDelete(DeleteBehavior.Cascade);
-            e.HasIndex(sb => new { sb.ServerId, sb.UserId })
-                .IsUnique();
         });
 
         modelBuilder.Entity<Channel>(e =>
@@ -119,28 +114,6 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
                 .WithMany(s => s.Channels)
                 .HasForeignKey(c => c.ServerId)
                 .OnDelete(DeleteBehavior.Cascade);
-            e.HasIndex(c => c.ServerId).IsUnique();
-        });
-
-        modelBuilder.Entity<AppUser>(e =>
-        {
-            e.HasIndex(u => u.UserName).IsUnique();
-            e.HasIndex(u => u.Email).IsUnique();
-        });
-
-        modelBuilder.Entity<Role>(e =>
-        {
-            e.HasIndex(s => s.ServerId).IsUnique();
-        });
-
-        modelBuilder.Entity<ServerRole>(e =>
-        {
-            e.HasIndex(sm => new { sm.UserId, sm.RoleId }).IsUnique();
-        });
-
-        modelBuilder.Entity<VoiceState>(e =>
-        {
-            e.HasIndex(sm => new { sm.UserId, sm.ChannelId }).IsUnique();
         });
 
         modelBuilder.Entity<Friend>(e =>
@@ -160,5 +133,23 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
                 .HasForeignKey(ub => ub.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
+
+        modelBuilder.Entity<ServerRole>(e =>
+        {
+            e.HasKey(sr => sr.ServerRoleId);
+            e.HasOne(sr => sr.Role)
+                .WithMany(r => r.ServerRoles)
+                .HasForeignKey(sr => sr.RoleId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(sr => sr.User)
+                .WithMany(u => u.ServerRoles)
+                .HasForeignKey(sr => sr.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(sr => sr.Server)
+                .WithMany(s => s.ServerRoles)
+                .HasForeignKey(sr => sr.ServerId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+        #endregion
     }
 }

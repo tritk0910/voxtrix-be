@@ -27,14 +27,14 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
 
     public async Task<UserDetailsDto> GetUserByIdAsync(string id)
     {
-        var user = await context.Users.FirstOrDefaultAsync(x => x.Id == id);
+        var user = await context.Users.FindAsync(id);
         var result = mapper.Map<UserDetailsDto>(user);
         return result;
     }
 
     public async Task<Result<UserDetailsDto>> EditUserAsync(UserEditDto userEditDto)
     {
-        var user = await context.Users.FirstOrDefaultAsync(x => x.Id == userEditDto.Id);
+        var user = await context.Users.FindAsync(userEditDto.Id);
         if (user == null) return Result<UserDetailsDto>.FailureResult("User not found");
 
         mapper.Map(userEditDto, user);
@@ -86,11 +86,13 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
         var user = await context.Users
             .Include(f => f.Friends)
             .Include(b => b.BlockedUsers)
+            .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == userId);
         if (user == null) return Result<FriendResponseDto>.FailureResult("User not found");
 
         var targetUser = await context.Users
             .Include(b => b.BlockedUsers)
+            .AsNoTracking()
             .FirstOrDefaultAsync(x => x.UserName == targetUsername);
         if (targetUser == null) return Result<FriendResponseDto>.FailureResult("Target user not found");
 
@@ -165,8 +167,14 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
 
         if (friendRequest == null) return Result<FriendResponseDto>.FailureResult("Friend request not found");
 
-        var user = await context.Users.Include(b => b.BlockedUsers).FirstOrDefaultAsync(x => x.Id == friendRequest.UserId);
-        var targetUser = await context.Users.Include(b => b.BlockedUsers).FirstOrDefaultAsync(x => x.Id == friendRequest.TargetId);
+        var user = await context.Users
+            .AsNoTracking()
+            .Include(b => b.BlockedUsers)
+            .FirstOrDefaultAsync(x => x.Id == friendRequest.UserId);
+        var targetUser = await context.Users
+            .AsNoTracking()
+            .Include(b => b.BlockedUsers)
+            .FirstOrDefaultAsync(x => x.Id == friendRequest.TargetId);
 
         if (user == null || targetUser == null) return Result<FriendResponseDto>.FailureResult("User not found");
 
@@ -279,13 +287,13 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
     {
         if (userId == targetId) return Result<BlockedUserDto>.FailureResult("Users cannot block themselves");
 
-        var user = await context.Users.FirstOrDefaultAsync(x => x.Id == userId);
+        var user = await context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Id == userId);
         if (user == null) return Result<BlockedUserDto>.FailureResult("User not found");
 
-        var targetUser = await context.Users.FirstOrDefaultAsync(x => x.Id == targetId);
+        var targetUser = await context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Id == targetId);
         if (targetUser == null) return Result<BlockedUserDto>.FailureResult("Target user not found");
 
-        if (await context.UserBlocks.AnyAsync(ub => ub.UserId == userId && ub.BlockedUserId == targetId))
+        if (await context.UserBlocks.AsNoTracking().AnyAsync(ub => ub.UserId == userId && ub.BlockedUserId == targetId))
             return Result<BlockedUserDto>.FailureResult("User already blocked");
 
         // Remove friend if exists when blocking user
