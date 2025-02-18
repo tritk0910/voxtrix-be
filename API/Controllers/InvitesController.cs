@@ -8,10 +8,9 @@ namespace API.Controllers;
 
 [ApiController]
 [Authorize]
-public class InvitesController(IInviteRepository inviteRepository) : ControllerBase
+public class InvitesController(IInviteRepository inviteRepository) : BaseApiController
 {
     [HttpGet]
-    [Route("{inviteCode}")]
     public async Task<ActionResult<Result<bool>>> JoinServerViaInviteLink(string inviteCode)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

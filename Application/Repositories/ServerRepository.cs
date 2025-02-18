@@ -94,6 +94,7 @@ public class ServerRepository(DataContext context, IMapper mapper) : IServerRepo
 
         var currentOwner = server.ServerMembers.FirstOrDefault(sm => sm.IsOwner);
         if (currentOwner == null || currentOwner.MemberId != userId) return Result<ServerTransferDto>.FailureResult("You are not the owner of this server");
+        if (currentOwner.MemberId == newOwnerId) return Result<ServerTransferDto>.FailureResult("You are already the owner of this server");
 
         var newOwner = server.ServerMembers.FirstOrDefault(sm => sm.MemberId == newOwnerId);
         if (newOwner == null) return Result<ServerTransferDto>.FailureResult("New owner is not a member of this server");
