@@ -1,4 +1,5 @@
 using API.Extensions;
+using Application.Services;
 using Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -15,10 +16,28 @@ var app = builder.Build();
 
 app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
 
+// Set styling default root to /wwwroot/ folder
+app.UseStaticFiles();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+        options.InjectStylesheet("/assets/css/style.css");
+        options.ConfigObject.AdditionalItems["showExtensions"] = false;
+    });
+}
+
+app.UseExceptionHandler("/error");
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHub<AppHub>("/hubs/app");
 
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;

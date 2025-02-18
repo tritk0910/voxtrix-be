@@ -38,7 +38,9 @@ public class AccountsController(UserManager<AppUser> userManager, IMapper mapper
     [HttpPost("login")]
     public async Task<ActionResult<Result<UserDto>>> Login(LoginDto loginDto)
     {
-        var user = await userManager.Users.FirstOrDefaultAsync(x => x.Email == loginDto.UsernameOrEmail || x.UserName == loginDto.UsernameOrEmail);
+        var user = await userManager.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Email == loginDto.UsernameOrEmail || x.UserName == loginDto.UsernameOrEmail);
 
         if (user == null) return Unauthorized(Result<UserDto>.FailureResult("Invalid username or email"));
 
@@ -55,7 +57,9 @@ public class AccountsController(UserManager<AppUser> userManager, IMapper mapper
     [HttpGet]
     public async Task<ActionResult<Result<AppUser>>> GetCurrentUser()
     {
-        var user = await userManager.Users.FirstOrDefaultAsync(x => x.Email == User.FindFirstValue(ClaimTypes.Email));
+        var user = await userManager.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Email == User.FindFirstValue(ClaimTypes.Email));
 
         if (user == null) return NotFound(Result<AppUser>.FailureResult("User not found"));
 

@@ -1,11 +1,14 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace Domain.Entities;
 
+[Index(nameof(UserName), nameof(Email), IsUnique = true)]
 public class AppUser : IdentityUser
 {
     public string DisplayName { get; set; } = "";
     public string Avatar { get; set; }
+    public string CustomStatus { get; set; }
     public UserStatus Status { get; set; }
     public string Bio { get; set; }
     public DateOnly DoB { get; set; }
@@ -16,6 +19,9 @@ public class AppUser : IdentityUser
     public ICollection<Invite> Invites { get; set; } = [];
     public ICollection<Server> OwnedServers { get; set; } = [];
     public ICollection<ServerBan> ServerBans { get; set; } = [];
+    public ICollection<ServerRole> ServerRoles { get; set; } = [];
+    public ICollection<Friend> Friends { get; set; } = [];
+    public ICollection<UserBlock> BlockedUsers { get; set; } = [];
 }
 
 public enum UserStatus
