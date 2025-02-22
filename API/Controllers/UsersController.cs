@@ -12,6 +12,11 @@ namespace API.Controllers;
 [Authorize]
 public partial class UsersController(UserManager<AppUser> userManager, IUserRepository userRepository, IMapper mapper) : BaseApiController
 {
+    /// <summary>
+    /// Retrieves a paginated list of users.
+    /// </summary>
+    /// <param name="defaultParams">Pagination parameters.</param>
+    /// <returns>A paginated list of users.</returns>
     [HttpGet]
     public async Task<ActionResult<Result<PagedResult<UserDto>>>> GetUsers([FromBody] DefaultParams defaultParams)
     {
@@ -28,6 +33,11 @@ public partial class UsersController(UserManager<AppUser> userManager, IUserRepo
         return Ok(Result<PagedResult<UserDto>>.SuccessResult(result));
     }
 
+    /// <summary>
+    /// Retrieves details of a specific user by ID.
+    /// </summary>
+    /// <param name="userId">The ID of the user.</param>
+    /// <returns>User details.</returns>
     [HttpGet("details")]
     public async Task<ActionResult<Result<UserDetailsDto>>> GetUserAsync([FromQuery] string userId)
     {
@@ -40,6 +50,11 @@ public partial class UsersController(UserManager<AppUser> userManager, IUserRepo
         return Ok(Result<UserDetailsDto>.SuccessResult(result));
     }
 
+    /// <summary>
+    /// Edits a user's details.
+    /// </summary>
+    /// <param name="userEditDto">The user details to edit.</param>
+    /// <returns>The updated user details.</returns>
     [HttpPut]
     public async Task<ActionResult<Result<UserDetailsDto>>> EditUserAsync(UserEditDto userEditDto)
     {
@@ -49,6 +64,11 @@ public partial class UsersController(UserManager<AppUser> userManager, IUserRepo
         return Ok(result);
     }
 
+    /// <summary>
+    /// Deletes a user by ID.
+    /// </summary>
+    /// <param name="userId">The ID of the user to delete.</param>
+    /// <returns>The result of the deletion.</returns>
     [HttpDelete]
     public async Task<ActionResult<Result<UserDetailsDto>>> DeleteUserAsync([FromQuery] string userId)
     {
