@@ -60,7 +60,9 @@ public class AccountsController(UserManager<AppUser> userManager, IMapper mapper
         var user = await userManager.Users
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Email == User.FindFirstValue(ClaimTypes.Email));
-
+        var token = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
+        var isValidToken = tokenService.ValidateToken(token);
+        if (!isValidToken) return Unauthorized(Result<AppUser>.FailureResult("Invalid token"));
         if (user == null) return NotFound(Result<AppUser>.FailureResult("User not found"));
 
         return Ok(Result<AppUser>.SuccessResult(user, "User retrieved successfully"));
