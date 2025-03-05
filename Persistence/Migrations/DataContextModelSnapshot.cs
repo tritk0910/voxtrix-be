@@ -140,10 +140,9 @@ namespace Persistence.Migrations
 
                     b.HasIndex("ParentChannelId");
 
-                    b.HasIndex("ServerId")
-                        .IsUnique();
+                    b.HasIndex("ServerId");
 
-                    b.ToTable("Channels");
+                    b.ToTable("Channels", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Friend", b =>
@@ -169,7 +168,7 @@ namespace Persistence.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Friends");
+                    b.ToTable("Friends", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Invite", b =>
@@ -211,7 +210,7 @@ namespace Persistence.Migrations
 
                     b.HasIndex("ServerId");
 
-                    b.ToTable("Invites");
+                    b.ToTable("Invites", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Message", b =>
@@ -251,7 +250,7 @@ namespace Persistence.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Messages");
+                    b.ToTable("Messages", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Notification", b =>
@@ -277,7 +276,7 @@ namespace Persistence.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notifications");
+                    b.ToTable("Notifications", (string)null);
 
                     b.HasDiscriminator().HasValue("Notification");
 
@@ -309,7 +308,7 @@ namespace Persistence.Migrations
                     b.HasIndex("MessageId", "UserId")
                         .IsUnique();
 
-                    b.ToTable("Reactions");
+                    b.ToTable("Reactions", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Role", b =>
@@ -324,8 +323,11 @@ namespace Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Permissions")
-                        .HasColumnType("text");
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("boolean");
+
+                    b.Property<long>("Permissions")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("Position")
                         .HasColumnType("integer");
@@ -336,7 +338,7 @@ namespace Persistence.Migrations
 
                     b.HasKey("RoleId");
 
-                    b.ToTable("Roles");
+                    b.ToTable("Roles", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Server", b =>
@@ -363,7 +365,7 @@ namespace Persistence.Migrations
 
                     b.HasIndex("OwnerId");
 
-                    b.ToTable("Servers");
+                    b.ToTable("Servers", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.ServerBan", b =>
@@ -393,7 +395,7 @@ namespace Persistence.Migrations
                     b.HasIndex("ServerId", "UserId")
                         .IsUnique();
 
-                    b.ToTable("ServerBans");
+                    b.ToTable("ServerBans", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.ServerMember", b =>
@@ -423,7 +425,7 @@ namespace Persistence.Migrations
                     b.HasIndex("ServerId", "MemberId")
                         .IsUnique();
 
-                    b.ToTable("ServerMembers");
+                    b.ToTable("ServerMembers", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.ServerRole", b =>
@@ -454,7 +456,7 @@ namespace Persistence.Migrations
                     b.HasIndex("UserId", "RoleId", "ServerId")
                         .IsUnique();
 
-                    b.ToTable("ServerRole");
+                    b.ToTable("ServerRole", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.UserBlock", b =>
@@ -477,7 +479,7 @@ namespace Persistence.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserBlocks");
+                    b.ToTable("UserBlocks", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

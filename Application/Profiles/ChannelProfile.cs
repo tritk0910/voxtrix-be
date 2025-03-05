@@ -13,5 +13,12 @@ public class ChannelProfile : Profile
             .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.ChannelName))
             .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.ChannelType))
             .ReverseMap();
+        CreateMap<Channel, CreateChannelDto>()
+            .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.ChannelName))
+            .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.ChannelType))
+            .ReverseMap();
+        CreateMap<Channel, UpdateChannelDto>()
+            .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.ChannelName))
+            .ReverseMap();
     }
 }

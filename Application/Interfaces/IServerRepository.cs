@@ -10,10 +10,7 @@ public interface IServerRepository
     Task<ServerDto> CreateServer(CreateServerDto createServerDto, string userId);
     Task<ServerBasicDto> GetServerBasicAsync(string serverId);
     Task<ServerDetailsDto> GetServerDetailsAsync(string serverId);
-    Task<InviteDto> CreateInvite(CreateInviteDto createInviteDto);
-    Task<Result<InviteDto>> UpdateInviteAsync(UpdateInviteDto updateInviteDto);
-    Task<Result<bool>> PauseInviteAsync(string serverId);
-    Task<Result<bool>> DeleteInviteAsync(string inviteId);
+    Task<IQueryable<ServerMemberDto>> GetMembersByServerId(string serverId);
     Task<Result<bool>> DeleteServer(string userId, string serverId);
     Task<Result<ServerTransferDto>> TransferOwnership(string userId, string serverId, string newOwnerId);
 }

@@ -19,8 +19,6 @@ public class ServerTransferDto : ServerDto
 public class ServerBasicDto : ServerTransferDto
 {
     public string BannerImage { get; set; }
-    public List<ChannelDto> Channels { get; set; }
-    public List<ServerMemberDto> Members { get; set; }
 }
 
 public class ServerDetailsDto : ServerBasicDto

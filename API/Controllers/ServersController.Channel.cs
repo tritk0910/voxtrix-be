@@ -11,7 +11,7 @@ public partial class ServersController
     /// </summary>
     /// <param name="serverId">The ID of the server.</param>
     /// <returns>A list of channels associated with the specified server.</returns>
-    [HttpGet("servers/{serverId}/channels")]
+    [HttpGet("channels")]
     public async Task<ActionResult<Result<List<ChannelDto>>>> GetChannelsByServerId(string serverId)
     {
         var result = await channelRepository.GetChannelsByServerIdAsync(serverId);

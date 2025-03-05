@@ -12,8 +12,8 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20250214051557_UpdateUserSocial")]
-    partial class UpdateUserSocial
+    [Migration("20250305094332_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -100,9 +100,6 @@ namespace Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Email")
-                        .IsUnique();
-
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
@@ -111,6 +108,9 @@ namespace Persistence.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.HasIndex("UserName")
+                        .IsUnique();
+
+                    b.HasIndex("UserName", "Email")
                         .IsUnique();
 
                     b.ToTable("AspNetUsers", (string)null);
@@ -143,26 +143,33 @@ namespace Persistence.Migrations
 
                     b.HasIndex("ParentChannelId");
 
-                    b.HasIndex("ServerId")
-                        .IsUnique();
+                    b.HasIndex("ServerId");
 
                     b.ToTable("Channels");
                 });
 
-            modelBuilder.Entity("Domain.Entities.FriendshipRelation", b =>
+            modelBuilder.Entity("Domain.Entities.Friend", b =>
                 {
-                    b.Property<string>("UserId")
-                        .HasColumnType("text");
-
                     b.Property<string>("FriendId")
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("UserId", "FriendId");
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
-                    b.HasIndex("FriendId");
+                    b.Property<string>("TargetId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.HasKey("FriendId");
+
+                    b.HasIndex("TargetId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Friends");
                 });
@@ -232,14 +239,51 @@ namespace Persistence.Migrations
                     b.Property<DateTime>("EditedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("RecipientId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
                     b.HasKey("MessageId");
 
-                    b.HasIndex("AuthorId");
+                    b.HasIndex("ChannelId");
 
-                    b.HasIndex("ChannelId", "AuthorId")
-                        .IsUnique();
+                    b.HasIndex("RecipientId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Messages");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Notification", b =>
+                {
+                    b.Property<string>("NotificationId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(34)
+                        .HasColumnType("character varying(34)");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.HasKey("NotificationId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Notifications");
+
+                    b.HasDiscriminator().HasValue("Notification");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Domain.Entities.Reaction", b =>
@@ -282,8 +326,11 @@ namespace Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Permissions")
-                        .HasColumnType("text");
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("boolean");
+
+                    b.Property<long>("Permissions")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("Position")
                         .HasColumnType("integer");
@@ -292,15 +339,9 @@ namespace Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<string>("ServerId")
-                        .HasColumnType("text");
-
                     b.HasKey("RoleId");
 
-                    b.HasIndex("ServerId")
-                        .IsUnique();
-
-                    b.ToTable("Role");
+                    b.ToTable("Roles");
                 });
 
             modelBuilder.Entity("Domain.Entities.Server", b =>
@@ -325,8 +366,7 @@ namespace Persistence.Migrations
 
                     b.HasKey("ServerId");
 
-                    b.HasIndex("OwnerId")
-                        .IsUnique();
+                    b.HasIndex("OwnerId");
 
                     b.ToTable("Servers");
                 });
@@ -416,7 +456,7 @@ namespace Persistence.Migrations
 
                     b.HasIndex("ServerMemberId");
 
-                    b.HasIndex("UserId", "RoleId")
+                    b.HasIndex("UserId", "RoleId", "ServerId")
                         .IsUnique();
 
                     b.ToTable("ServerRole");
@@ -424,7 +464,7 @@ namespace Persistence.Migrations
 
             modelBuilder.Entity("Domain.Entities.UserBlock", b =>
                 {
-                    b.Property<string>("UserId")
+                    b.Property<string>("UserBlockId")
                         .HasColumnType("text");
 
                     b.Property<string>("BlockedUserId")
@@ -433,71 +473,16 @@ namespace Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("UserId", "BlockedUserId");
-
-                    b.HasIndex("BlockedUserId");
-
-                    b.ToTable("UserBlocks");
-                });
-
-            modelBuilder.Entity("Domain.Entities.VoiceState", b =>
-                {
-                    b.Property<string>("VoiceStateId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ChannelId")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsDeafened")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsMuted")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsSelfDeafened")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsSelfMuted")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsStreaming")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsSuppressed")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsVideoEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsVoiceActivityDetected")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsVoiceActivityEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsVoiceConnected")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsVoiceDisconnected")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime>("JoinedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("LeftAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("UserId")
                         .HasColumnType("text");
 
-                    b.HasKey("VoiceStateId");
+                    b.HasKey("UserBlockId");
 
-                    b.HasIndex("ChannelId");
+                    b.HasIndex("BlockedUserId");
 
-                    b.HasIndex("UserId", "ChannelId")
-                        .IsUnique();
+                    b.HasIndex("UserId");
 
-                    b.ToTable("VoiceState");
+                    b.ToTable("UserBlocks");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -632,6 +617,18 @@ namespace Persistence.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Domain.Entities.FriendRequestNotification", b =>
+                {
+                    b.HasBaseType("Domain.Entities.Notification");
+
+                    b.Property<string>("RequesterId")
+                        .HasColumnType("text");
+
+                    b.HasIndex("RequesterId");
+
+                    b.HasDiscriminator().HasValue("FriendRequestNotification");
+                });
+
             modelBuilder.Entity("Domain.Entities.Channel", b =>
                 {
                     b.HasOne("Domain.Entities.Channel", "ParentChannel")
@@ -648,21 +645,18 @@ namespace Persistence.Migrations
                     b.Navigation("Server");
                 });
 
-            modelBuilder.Entity("Domain.Entities.FriendshipRelation", b =>
+            modelBuilder.Entity("Domain.Entities.Friend", b =>
                 {
-                    b.HasOne("Domain.Entities.AppUser", "Friend")
-                        .WithMany("FriendRequests")
-                        .HasForeignKey("FriendId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasOne("Domain.Entities.AppUser", "Target")
+                        .WithMany()
+                        .HasForeignKey("TargetId");
 
                     b.HasOne("Domain.Entities.AppUser", "User")
                         .WithMany("Friends")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
-                    b.Navigation("Friend");
+                    b.Navigation("Target");
 
                     b.Navigation("User");
                 });
@@ -671,7 +665,8 @@ namespace Persistence.Migrations
                 {
                     b.HasOne("Domain.Entities.AppUser", "Author")
                         .WithMany("Invites")
-                        .HasForeignKey("AuthorId");
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Domain.Entities.Server", "Server")
                         .WithMany("Invites")
@@ -685,17 +680,32 @@ namespace Persistence.Migrations
 
             modelBuilder.Entity("Domain.Entities.Message", b =>
                 {
-                    b.HasOne("Domain.Entities.AppUser", "User")
-                        .WithMany("Messages")
-                        .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.HasOne("Domain.Entities.Channel", "Channel")
                         .WithMany("Messages")
                         .HasForeignKey("ChannelId")
                         .OnDelete(DeleteBehavior.Cascade);
 
+                    b.HasOne("Domain.Entities.AppUser", "Recipient")
+                        .WithMany("Messages")
+                        .HasForeignKey("RecipientId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Domain.Entities.AppUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
                     b.Navigation("Channel");
+
+                    b.Navigation("Recipient");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Notification", b =>
+                {
+                    b.HasOne("Domain.Entities.AppUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
 
                     b.Navigation("User");
                 });
@@ -715,15 +725,6 @@ namespace Persistence.Migrations
                     b.Navigation("Message");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Role", b =>
-                {
-                    b.HasOne("Domain.Entities.Server", "Server")
-                        .WithMany()
-                        .HasForeignKey("ServerId");
-
-                    b.Navigation("Server");
                 });
 
             modelBuilder.Entity("Domain.Entities.Server", b =>
@@ -773,22 +774,27 @@ namespace Persistence.Migrations
             modelBuilder.Entity("Domain.Entities.ServerRole", b =>
                 {
                     b.HasOne("Domain.Entities.Role", "Role")
-                        .WithMany()
-                        .HasForeignKey("RoleId");
+                        .WithMany("ServerRoles")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("Domain.Entities.Server", null)
-                        .WithMany("Roles")
-                        .HasForeignKey("ServerId");
+                    b.HasOne("Domain.Entities.Server", "Server")
+                        .WithMany("ServerRoles")
+                        .HasForeignKey("ServerId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Domain.Entities.ServerMember", null)
                         .WithMany("UserRoles")
                         .HasForeignKey("ServerMemberId");
 
                     b.HasOne("Domain.Entities.AppUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
+                        .WithMany("ServerRoles")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Role");
+
+                    b.Navigation("Server");
 
                     b.Navigation("User");
                 });
@@ -796,33 +802,15 @@ namespace Persistence.Migrations
             modelBuilder.Entity("Domain.Entities.UserBlock", b =>
                 {
                     b.HasOne("Domain.Entities.AppUser", "BlockedUser")
-                        .WithMany("BlockedByUsers")
-                        .HasForeignKey("BlockedUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany()
+                        .HasForeignKey("BlockedUserId");
 
                     b.HasOne("Domain.Entities.AppUser", "User")
                         .WithMany("BlockedUsers")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("BlockedUser");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Domain.Entities.VoiceState", b =>
-                {
-                    b.HasOne("Domain.Entities.Channel", "Channel")
-                        .WithMany()
-                        .HasForeignKey("ChannelId");
-
-                    b.HasOne("Domain.Entities.AppUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("Channel");
 
                     b.Navigation("User");
                 });
@@ -878,13 +866,18 @@ namespace Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Domain.Entities.FriendRequestNotification", b =>
+                {
+                    b.HasOne("Domain.Entities.AppUser", "Requester")
+                        .WithMany()
+                        .HasForeignKey("RequesterId");
+
+                    b.Navigation("Requester");
+                });
+
             modelBuilder.Entity("Domain.Entities.AppUser", b =>
                 {
-                    b.Navigation("BlockedByUsers");
-
                     b.Navigation("BlockedUsers");
-
-                    b.Navigation("FriendRequests");
 
                     b.Navigation("Friends");
 
@@ -899,6 +892,8 @@ namespace Persistence.Migrations
                     b.Navigation("ServerBans");
 
                     b.Navigation("ServerMembers");
+
+                    b.Navigation("ServerRoles");
                 });
 
             modelBuilder.Entity("Domain.Entities.Channel", b =>
@@ -911,6 +906,11 @@ namespace Persistence.Migrations
                     b.Navigation("Reactions");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Role", b =>
+                {
+                    b.Navigation("ServerRoles");
+                });
+
             modelBuilder.Entity("Domain.Entities.Server", b =>
                 {
                     b.Navigation("Bans");
@@ -919,9 +919,9 @@ namespace Persistence.Migrations
 
                     b.Navigation("Invites");
 
-                    b.Navigation("Roles");
-
                     b.Navigation("ServerMembers");
+
+                    b.Navigation("ServerRoles");
                 });
 
             modelBuilder.Entity("Domain.Entities.ServerMember", b =>
