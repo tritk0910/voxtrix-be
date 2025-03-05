@@ -12,6 +12,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
+/// <summary>
+/// Manages user accounts, including registration, login, password reset, and OTP verification.
+/// </summary>
 [Authorize]
 public class AccountsController(UserManager<AppUser> userManager, IMapper mapper, ITokenService tokenService, IEmailService emailService, IRedisService redisService) : BaseApiController
 {

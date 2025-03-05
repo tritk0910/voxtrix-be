@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
+/// <summary>
+/// Manages server invites, including joining a server via an invite link.
+/// </summary>
 [ApiController]
 [Authorize]
 public class InvitesController(IInviteRepository inviteRepository) : BaseApiController

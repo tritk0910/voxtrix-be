@@ -15,12 +15,13 @@ public static class ApplicationServiceExtensions
     public static IServiceCollection AddApplicationServiceExtensions(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddControllers();
+        services.AddRouting(options => options.LowercaseUrls = true);
         services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "Voxtrix API", Version = "v1" });
             var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
             var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-            c.IncludeXmlComments(xmlPath);
+            c.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
             c.AddSecurityDefinition("JWT Token", new OpenApiSecurityScheme
             {
                 Name = "Authorization",

@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
+/// <summary>
+/// Manages users, including retrieval, blocking, unblocking, and editing user details.
+/// </summary>
 [Authorize]
 public partial class UsersController(UserManager<AppUser> userManager, IUserRepository userRepository, IMapper mapper) : BaseApiController
 {

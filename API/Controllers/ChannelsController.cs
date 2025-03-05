@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
+/// <summary>
+/// Manages channels, including creation, retrieval, updating, and deletion of channels.
+/// </summary>
 [Authorize]
 public class ChannelsController(IChannelRepository channelRepository) : BaseApiController
 {

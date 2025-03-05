@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
+/// <summary>
+/// Manages servers, including creation, retrieval, updating, and deletion of servers.
+/// </summary>
 [Authorize]
 public partial class ServersController(IServerRepository serverRepository, IChannelRepository channelRepository) : BaseApiController
 {
