@@ -9,6 +9,13 @@ namespace API.Controllers;
 
 public partial class UsersController
 {
+    /// <summary>
+    /// Sets a custom status for the authenticated user.
+    /// </summary>
+    /// <param name="customStatus">The custom status to set.</param>
+    /// <returns>A result containing the updated user details.</returns>
+    /// <response code="200">Custom status updated successfully.</response>
+    /// <response code="404">User not found.</response>
     [HttpPost("custom-status")]
     public async Task<ActionResult<Result<UserDetailsDto>>> SetCustomStatus([FromBody] string customStatus)
     {
@@ -23,6 +30,14 @@ public partial class UsersController
         return Ok(Result<UserDetailsDto>.SuccessResult(userDetailsDto, "Custom status updated successfully"));
     }
 
+    /// <summary>
+    /// Sets a predefined status for the authenticated user.
+    /// </summary>
+    /// <param name="status">The status to set.</param>
+    /// <returns>A result containing the updated user details.</returns>
+    /// <response code="200">Status updated successfully.</response>
+    /// <response code="400">Invalid status value.</response>
+    /// <response code="404">User not found.</response>
     [HttpPost("status")]
     public async Task<ActionResult<Result<UserDetailsDto>>> SetStatus([FromBody] string status)
     {

@@ -19,16 +19,13 @@ app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin().WithExpose
 // Set styling default root to /wwwroot/ folder
 app.UseStaticFiles();
 
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(options =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
-        options.InjectStylesheet("/assets/css/style.css");
-        options.ConfigObject.AdditionalItems["showExtensions"] = false;
-    });
-}
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+    options.InjectStylesheet("/assets/css/style.css");
+    options.ConfigObject.AdditionalItems["showExtensions"] = false;
+});
 
 app.UseExceptionHandler("/error");
 

@@ -7,9 +7,16 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
+/// <summary>
+/// Manages servers, including creation, retrieval, updating, and deletion of servers.
+/// </summary>
 [Authorize]
 public partial class ServersController(IServerRepository serverRepository, IChannelRepository channelRepository) : BaseApiController
 {
+    /// <summary>
+    /// Gets the list of servers the current user has joined.
+    /// </summary>
+    /// <returns>A list of servers the user has joined.</returns>
     [HttpGet("joined-servers")]
     public async Task<ActionResult<Result<List<ServerDto>>>> GetJoinedServersAsync()
     {
@@ -19,6 +26,11 @@ public partial class ServersController(IServerRepository serverRepository, IChan
         return Ok(Result<List<ServerDto>>.SuccessResult(servers));
     }
 
+    /// <summary>
+    /// Creates a new server.
+    /// </summary>
+    /// <param name="createServerDto">The details of the server to create.</param>
+    /// <returns>The created server.</returns>
     [HttpPost]
     public async Task<ActionResult<Result<ServerDto>>> CreateServer(CreateServerDto createServerDto)
     {
@@ -28,6 +40,11 @@ public partial class ServersController(IServerRepository serverRepository, IChan
         return Ok(Result<ServerDto>.SuccessResult(server));
     }
 
+    /// <summary>
+    /// Gets basic information about a server.
+    /// </summary>
+    /// <param name="serverId">The ID of the server.</param>
+    /// <returns>Basic information about the server.</returns>
     [HttpGet]
     public async Task<ActionResult<Result<ServerBasicDto>>> GetServerBasicAsync([FromQuery] string serverId)
     {
@@ -37,6 +54,11 @@ public partial class ServersController(IServerRepository serverRepository, IChan
         return NotFound(Result<ServerBasicDto>.FailureResult("Server not found"));
     }
 
+    /// <summary>
+    /// Gets detailed information about a server.
+    /// </summary>
+    /// <param name="serverId">The ID of the server.</param>
+    /// <returns>Detailed information about the server.</returns>
     [HttpGet("details")]
     public async Task<ActionResult<Result<ServerDetailsDto>>> GetServerDetailsAsync([FromQuery] string serverId)
     {
@@ -46,6 +68,11 @@ public partial class ServersController(IServerRepository serverRepository, IChan
         return NotFound(Result<ServerDetailsDto>.FailureResult("Server not found"));
     }
 
+    /// <summary>
+    /// Deletes a server.
+    /// </summary>
+    /// <param name="serverId">The ID of the server to delete.</param>
+    /// <returns>A result indicating whether the deletion was successful.</returns>
     [HttpDelete]
     public async Task<ActionResult<Result<bool>>> DeleteServer([FromQuery] string serverId)
     {
@@ -55,6 +82,12 @@ public partial class ServersController(IServerRepository serverRepository, IChan
         return Ok(result);
     }
 
+    /// <summary>
+    /// Transfers ownership of a server to a new owner.
+    /// </summary>
+    /// <param name="serverId">The ID of the server.</param>
+    /// <param name="newOwnerId">The ID of the new owner.</param>
+    /// <returns>A result indicating whether the transfer was successful.</returns>
     [HttpPost("ownership")]
     public async Task<ActionResult<Result<ServerTransferDto>>> TransferOwnership([FromQuery] string serverId, [FromQuery] string newOwnerId)
     {

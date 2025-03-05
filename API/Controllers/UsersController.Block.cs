@@ -6,6 +6,12 @@ namespace API.Controllers;
 
 public partial class UsersController
 {
+    /// <summary>
+    /// Gets a paginated list of blocked users for a specific user.
+    /// </summary>
+    /// <param name="userId">The ID of the user.</param>
+    /// <param name="defaultParams">Pagination parameters.</param>
+    /// <returns>A paginated list of blocked users.</returns>
     [HttpGet("blocked")]
     public async Task<ActionResult<Result<PagedResult<BlockedUserDto>>>> GetBlockedUsersAsync([FromQuery] string userId, [FromBody] DefaultParams defaultParams)
     {
@@ -24,6 +30,12 @@ public partial class UsersController
         return Ok(Result<PagedResult<BlockedUserDto>>.SuccessResult(result));
     }
 
+    /// <summary>
+    /// Blocks a user.
+    /// </summary>
+    /// <param name="userId">The ID of the user performing the block.</param>
+    /// <param name="targetId">The ID of the user to be blocked.</param>
+    /// <returns>The blocked user information.</returns>
     [HttpPost("block")]
     public async Task<ActionResult<Result<BlockedUserDto>>> BlockUserAsync([FromQuery] string userId, [FromQuery] string targetId)
     {
@@ -33,6 +45,11 @@ public partial class UsersController
         return Ok(result);
     }
 
+    /// <summary>
+    /// Unblocks a user.
+    /// </summary>
+    /// <param name="blockId">The ID of the block record.</param>
+    /// <returns>A boolean indicating whether the unblock was successful.</returns>
     [HttpDelete("block")]
     public async Task<ActionResult<Result<bool>>> UnblockUserAsync([FromQuery] string blockId)
     {

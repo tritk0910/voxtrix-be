@@ -1,3 +1,4 @@
+using System.Reflection;
 using Application.Interfaces;
 using Application.Profiles;
 using Application.Repositories;
@@ -5,6 +6,7 @@ using Application.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Persistence;
+using Swashbuckle.AspNetCore.Filters;
 
 namespace API.Extensions;
 
@@ -13,9 +15,23 @@ public static class ApplicationServiceExtensions
     public static IServiceCollection AddApplicationServiceExtensions(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddControllers();
+        services.AddRouting(options => options.LowercaseUrls = true);
         services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "API", Version = "v1" });
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Voxtrix API", Version = "v1" });
+            var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+            c.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
+            c.AddSecurityDefinition("JWT Token", new OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.ApiKey,
+                Scheme = "Bearer",
+                BearerFormat = "JWT",
+            });
+
+            c.OperationFilter<SecurityRequirementsOperationFilter>();
         });
 
         services.AddSignalR();

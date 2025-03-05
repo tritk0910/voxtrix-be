@@ -82,6 +82,32 @@ span {
   gap: 20px;
 }
 
+.swagger-ui .scheme-container {
+  background: var(--primary-color) !important;
+  box-shadow: none;
+}
+
+.swagger-ui .dialog-ux .modal-ux {
+  background: var(--primary-color) !important;
+  border: 1px solid var(--secondary-color);
+}
+
+.swagger-ui .dialog-ux .modal-ux-header .close-modal {
+  fill: var(--heading-text);
+}
+
+.swagger-ui .dialog-ux .modal-ux h3,
+.swagger-ui .dialog-ux .modal-ux h4,
+.swagger-ui .dialog-ux .modal-ux label,
+.swagger-ui .dialog-ux .modal-ux p {
+  color: var(--heading-text);
+}
+
+.swagger-ui input[type=email], .swagger-ui input[type=file], .swagger-ui input[type=password], .swagger-ui input[type=search], .swagger-ui input[type=text], .swagger-ui textarea {
+  background: var(--primary-color) !important;
+  outline: none;
+}
+
 .swagger-ui .model-box-control:focus,
 .swagger-ui .models-control:focus,
 .swagger-ui .opblock-summary-control:focus {

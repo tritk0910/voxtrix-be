@@ -6,10 +6,18 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
+/// <summary>
+/// Manages server invites, including joining a server via an invite link.
+/// </summary>
 [ApiController]
 [Authorize]
 public class InvitesController(IInviteRepository inviteRepository) : BaseApiController
 {
+    /// <summary>
+    /// Joins a server using an invite link.
+    /// </summary>
+    /// <param name="inviteCode">The invite code to join the server.</param>
+    /// <returns>A result indicating whether the operation was successful.</returns>
     [HttpGet]
     public async Task<ActionResult<Result<bool>>> JoinServerViaInviteLink(string inviteCode)
     {
