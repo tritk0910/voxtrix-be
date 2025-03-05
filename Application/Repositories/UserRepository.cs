@@ -27,9 +27,10 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
 
     public async Task<UserDetailsDto> GetUserByIdAsync(string id)
     {
-        var user = await context.Users.FindAsync(id);
-        var result = mapper.Map<UserDetailsDto>(user);
-        return result;
+        var user = await context.Users
+            .ProjectTo<UserDetailsDto>(mapper.ConfigurationProvider)
+            .FirstOrDefaultAsync(x => x.Id == id);
+        return user;
     }
 
     public async Task<Result<UserDetailsDto>> EditUserAsync(UserEditDto userEditDto)

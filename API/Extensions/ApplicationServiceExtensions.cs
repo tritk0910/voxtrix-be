@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Text.Json.Serialization;
 using Application.Interfaces;
 using Application.Profiles;
 using Application.Repositories;
@@ -14,7 +15,11 @@ public static class ApplicationServiceExtensions
 {
     public static IServiceCollection AddApplicationServiceExtensions(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddControllers();
+        services.AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
         services.AddRouting(options => options.LowercaseUrls = true);
         services.AddSwaggerGen(c =>
         {

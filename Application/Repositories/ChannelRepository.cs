@@ -13,6 +13,15 @@ public class ChannelRepository(DataContext context, IMapper mapper) : IChannelRe
 {
     public async Task<Result<ChannelDto>> CreateChannelAsync(CreateChannelDto createChannelDto)
     {
+        var parentChannel = await context.Channels.FindAsync(createChannelDto.ParentChannelId);
+        if (createChannelDto.ParentChannelId != null && parentChannel == null) return Result<ChannelDto>.FailureResult("Parent channel not found");
+        if (parentChannel != null && parentChannel.ChannelType != ChannelType.Category) return Result<ChannelDto>.FailureResult("Parent channel must be a category");
+
+        if (createChannelDto.Type == ChannelType.Category && createChannelDto.ParentChannelId != null)
+        {
+            return Result<ChannelDto>.FailureResult("Category channels cannot have a parent channel");
+        }
+
         var channel = mapper.Map<Channel>(createChannelDto);
         context.Channels.Add(channel);
         var saveResult = await context.SaveChangesAsync() > 0;
@@ -61,6 +70,15 @@ public class ChannelRepository(DataContext context, IMapper mapper) : IChannelRe
     {
         var channel = await context.Channels.FindAsync(updateChannelDto.ChannelId);
         if (channel == null) return Result<ChannelDto>.FailureResult("Channel not found");
+
+        if (updateChannelDto.ParentChannelId != null)
+        {
+            var parentChannel = await context.Channels.FindAsync(updateChannelDto.ParentChannelId);
+            if (parentChannel != null && parentChannel.ChannelType != ChannelType.Category)
+                return Result<ChannelDto>.FailureResult("Parent channel must be a category");
+
+            channel.ParentChannelId = updateChannelDto.ParentChannelId;
+        }
 
         mapper.Map(updateChannelDto, channel);
         var saveResult = await context.SaveChangesAsync() > 0;

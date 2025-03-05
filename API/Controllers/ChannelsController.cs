@@ -21,7 +21,7 @@ public class ChannelsController(IChannelRepository channelRepository) : BaseApiC
     public async Task<ActionResult<Result<ChannelDto>>> GetChannelById([FromQuery] string channelId)
     {
         var result = await channelRepository.GetChannelByIdAsync(channelId);
-        if (!result.Success) return NotFound(result.Message);
+        if (!result.Success) return NotFound(result);
         return Ok(result);
     }
 
@@ -34,7 +34,7 @@ public class ChannelsController(IChannelRepository channelRepository) : BaseApiC
     public async Task<ActionResult<Result<ChannelDto>>> CreateChannel(CreateChannelDto createChannelDto)
     {
         var result = await channelRepository.CreateChannelAsync(createChannelDto);
-        if (!result.Success) return BadRequest(result.Message);
+        if (!result.Success) return BadRequest(result);
         return Ok(result);
     }
 
@@ -47,7 +47,7 @@ public class ChannelsController(IChannelRepository channelRepository) : BaseApiC
     public async Task<ActionResult<Result<ChannelDto>>> UpdateChannel(UpdateChannelDto updateChannelDto)
     {
         var result = await channelRepository.UpdateChannelAsync(updateChannelDto);
-        if (!result.Success) return NotFound(result.Message);
+        if (!result.Success) return NotFound(result);
         return Ok(result);
     }
 
@@ -60,7 +60,7 @@ public class ChannelsController(IChannelRepository channelRepository) : BaseApiC
     public async Task<ActionResult<Result<bool>>> DeleteChannel([FromQuery] string channelId)
     {
         var result = await channelRepository.DeleteChannelAsync(channelId);
-        if (!result.Success) return NotFound(result.Message);
+        if (!result.Success) return NotFound(result);
         return Ok(result);
     }
 }

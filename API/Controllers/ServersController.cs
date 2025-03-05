@@ -68,6 +68,28 @@ public partial class ServersController(IServerRepository serverRepository, IChan
         return NotFound(Result<ServerDetailsDto>.FailureResult("Server not found"));
     }
 
+
+    /// <summary>
+    /// Gets the members of a server.
+    /// </summary>
+    /// <param name="serverId">The ID of the server.</param>
+    /// <param name="defaultParams">The default parameters for pagination.</param>
+    /// <returns>The members of the server.</returns>
+    [HttpGet("members")]
+    public async Task<ActionResult<Result<List<ServerMemberDto>>>> GetMembersByServerId([FromQuery] string serverId, [FromBody] DefaultParams defaultParams)
+    {
+        var members = await serverRepository.GetMembersByServerId(serverId);
+        var pagedMemberList = await PagedList<ServerMemberDto>.CreateAsync(members, defaultParams.PageNumber, defaultParams.PageSize);
+        var result = new PagedResult<ServerMemberDto>
+        {
+            Items = pagedMemberList,
+            CurrentPage = pagedMemberList.CurrentPage,
+            TotalPages = pagedMemberList.TotalPages
+        };
+
+        return Ok(Result<PagedResult<ServerMemberDto>>.SuccessResult(result));
+    }
+
     /// <summary>
     /// Deletes a server.
     /// </summary>

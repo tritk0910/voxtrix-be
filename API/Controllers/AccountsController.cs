@@ -25,7 +25,7 @@ public class AccountsController(UserManager<AppUser> userManager, IMapper mapper
     /// <returns>A result indicating success or failure.</returns>
     [AllowAnonymous]
     [HttpPost("register")]
-    public async Task<ActionResult<Result<UserDto>>> RegisterAsync(RegisterDto registerDto)
+    public async Task<ActionResult<Result<bool>>> RegisterAsync(RegisterDto registerDto)
     {
         if (await userManager.Users.AnyAsync(x => x.UserName == registerDto.Username || x.Email == registerDto.Email))
         {
@@ -37,7 +37,7 @@ public class AccountsController(UserManager<AppUser> userManager, IMapper mapper
 
         if (result.Succeeded)
         {
-            return Ok(Result<UserDto>.SuccessResult(CreateUserObject(user), "User registered successfully"));
+            return Ok(Result<bool>.SuccessResult(CreateUserObject(user), "User registered successfully"));
         }
         return BadRequest(Result<UserDto>.FailureResult("Registration failed"));
     }
@@ -49,7 +49,7 @@ public class AccountsController(UserManager<AppUser> userManager, IMapper mapper
     /// <returns>A result indicating success or failure.</returns>
     [AllowAnonymous]
     [HttpPost("login")]
-    public async Task<ActionResult<Result<UserDto>>> Login(LoginDto loginDto)
+    public async Task<ActionResult<Result<bool>>> Login(LoginDto loginDto)
     {
         var user = await userManager.Users
             .AsNoTracking()
@@ -61,7 +61,7 @@ public class AccountsController(UserManager<AppUser> userManager, IMapper mapper
 
         if (result)
         {
-            return Ok(Result<UserDto>.SuccessResult(CreateUserObject(user), "Login successful"));
+            return Ok(Result<bool>.SuccessResult(CreateUserObject(user), "Login successful"));
         }
 
         return Unauthorized(Result<UserDto>.FailureResult("Invalid password"));
@@ -174,11 +174,10 @@ public class AccountsController(UserManager<AppUser> userManager, IMapper mapper
         return Ok(Result<string>.SuccessResult(null, "Password has been reset successfully"));
     }
 
-    private UserDto CreateUserObject(AppUser user)
+    private bool CreateUserObject(AppUser user)
     {
-        var userDto = mapper.Map<UserDto>(user);
         var token = tokenService.CreateToken(user);
         Response.Headers.Append("Authorization", $"Bearer {token}");
-        return userDto;
+        return true;
     }
 }

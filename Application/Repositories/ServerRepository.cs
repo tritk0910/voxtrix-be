@@ -1,5 +1,4 @@
 using Application.Core;
-using Application.DTOs.Invites;
 using Application.DTOs.Servers;
 using Application.Interfaces;
 using AutoMapper;
@@ -27,6 +26,24 @@ public class ServerRepository(DataContext context, IMapper mapper) : IServerRepo
     {
         var server = mapper.Map<Server>(createServerDto);
         server.OwnerId = userId;
+
+        var everyoneRole = new Role 
+        {
+            RoleName= "everyone",
+            Permissions = (long)(RolePermission.ViewChannel | RolePermission.ReadMessageHistory),
+            Color = "#000000",
+            Position = 0,
+            IsDefault = true
+        };
+
+        server.ServerRoles = 
+        [
+            new ServerRole
+            {
+                Role = everyoneRole
+            }
+        ];
+
         server.ServerMembers =
         [
             new ServerMember
@@ -48,8 +65,6 @@ public class ServerRepository(DataContext context, IMapper mapper) : IServerRepo
         var server = await context.Servers
             .Where(s => s.ServerId == serverId)
             .AsNoTracking()
-            .Include(s => s.ServerMembers)
-                .ThenInclude(sm => sm.Member)
             .ProjectTo<ServerBasicDto>(mapper.ConfigurationProvider)
             .FirstOrDefaultAsync();
 
@@ -61,13 +76,23 @@ public class ServerRepository(DataContext context, IMapper mapper) : IServerRepo
         var server = await context.Servers
             .Where(s => s.ServerId == serverId)
             .AsNoTracking()
-            .Include(s => s.ServerMembers)
-                .ThenInclude(sm => sm.Member)
             .Include(s => s.Invites)
+            .Include(s => s.ServerRoles)
             .ProjectTo<ServerDetailsDto>(mapper.ConfigurationProvider)
             .FirstOrDefaultAsync();
 
         return server;
+    }
+
+    public async Task<IQueryable<ServerMemberDto>> GetMembersByServerId(string serverId)
+    {
+        var members = context.ServerMembers
+            .Where(sm => sm.ServerId == serverId)
+            .AsNoTracking()
+            .ProjectTo<ServerMemberDto>(mapper.ConfigurationProvider)
+            .AsQueryable();
+
+        return await Task.FromResult(members);
     }
 
     public async Task<Result<bool>> DeleteServer(string userId, string serverId)
@@ -107,85 +132,5 @@ public class ServerRepository(DataContext context, IMapper mapper) : IServerRepo
         if (!result) return Result<ServerTransferDto>.FailureResult("Failed to transfer ownership");
 
         return Result<ServerTransferDto>.SuccessResult(mapper.Map<ServerTransferDto>(server), "Ownership transferred successfully");
-    }
-
-    public async Task<InviteDto> CreateInvite(CreateInviteDto createInviteDto)
-    {
-        var invite = mapper.Map<Invite>(createInviteDto);
-        invite.InviteCode = GenerateRandomString();
-        invite.MaxUses = -1;
-        invite.ExpiredAt = DateTime.UtcNow.AddHours(24);
-
-        invite.Author = await context.Users
-            .Where(u => u.Id == invite.AuthorId)
-            .SingleOrDefaultAsync();
-
-        context.Invites.Add(invite);
-        await context.SaveChangesAsync();
-
-        return mapper.Map<InviteDto>(invite);
-    }
-
-    public async Task<Result<InviteDto>> UpdateInviteAsync(UpdateInviteDto updateInviteDto)
-    {
-        var invite = await context.Invites.FirstOrDefaultAsync(i => i.InviteId == updateInviteDto.InviteId);
-
-        if (invite == null) return Result<InviteDto>.FailureResult("Invite not found");
-        mapper.Map(updateInviteDto, invite);
-
-        var result = await context.SaveChangesAsync() > 0;
-
-        if (!result) return Result<InviteDto>.FailureResult("Failed to update invite");
-
-        var inviteDto = mapper.Map<InviteDto>(invite);
-        return Result<InviteDto>.SuccessResult(inviteDto, "Invite updated successfully");
-    }
-
-    public async Task<Result<bool>> PauseInviteAsync(string serverId)
-    {
-        var invites = await context.Invites.Where(i => i.ServerId == serverId).ToListAsync();
-
-        if (invites.Count == 0) return Result<bool>.FailureResult("No invites found");
-
-        foreach (var invite in invites)
-        {
-            invite.IsPaused = true;
-        }
-
-        var result = await context.SaveChangesAsync() > 0;
-
-        if (!result) return Result<bool>.FailureResult("Failed to pause invites");
-
-        return Result<bool>.SuccessResult(true, "Invites paused");
-    }
-
-    public async Task<Result<bool>> DeleteInviteAsync(string inviteId)
-    {
-        var invite = await context.Invites
-            .FirstOrDefaultAsync(i => i.InviteId == inviteId);
-
-        if (invite == null) return Result<bool>.FailureResult("Invite not found");
-
-        context.Invites.Remove(invite);
-        var result = await context.SaveChangesAsync() > 0;
-
-        if (!result) return Result<bool>.FailureResult("Failed to delete invite");
-
-        return Result<bool>.SuccessResult(true, "Invite deleted successfully");
-    }
-
-    private static string GenerateRandomString()
-    {
-        var _random = new Random();
-        int length = _random.Next(8, 11); // Length will be between 8 and 10
-        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-        char[] stringChars = new char[length];
-        for (int i = 0; i < length; i++)
-        {
-            stringChars[i] = chars[_random.Next(chars.Length)];
-        }
-
-        return new string(stringChars);
     }
 }
