@@ -15,5 +15,5 @@ public class ServerMember
     public AppUser Member { get; set; }
     public DateTime JoinedAt { get; set; } = DateTime.UtcNow;
     public bool IsBanned { get; set; }
-    public List<ServerRole> UserRoles { get; set; }
+    public ICollection<ServerMemberRole> ServerMemberRoles { get; set; } = [];
 }

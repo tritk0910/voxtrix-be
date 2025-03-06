@@ -1,5 +1,5 @@
 using Application.Core;
-using Application.DTOs.Channels;
+using Application.DTOs.Servers.Channels;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -15,6 +15,7 @@ public partial class ServersController
     public async Task<ActionResult<Result<List<ChannelDto>>>> GetChannelsByServerId(string serverId)
     {
         var result = await channelRepository.GetChannelsByServerIdAsync(serverId);
+        if (result.Success == false) return BadRequest(result);
         return Ok(result);
     }
 }

@@ -1,4 +1,4 @@
-using Application.DTOs.Channels;
+using Application.DTOs.Servers.Channels;
 using AutoMapper;
 using Domain.Entities;
 

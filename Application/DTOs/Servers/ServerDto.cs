@@ -1,5 +1,5 @@
-using Application.DTOs.Channels;
 using Application.DTOs.Invites;
+using Application.DTOs.Servers.Roles;
 
 namespace Application.DTOs.Servers;
 
@@ -25,5 +25,5 @@ public class ServerDetailsDto : ServerBasicDto
 {
     public List<InviteDto> Invites { get; set; }
     public List<BanDto> Bans { get; set; }
-    public List<ServerRoleDto> Roles { get; set; }
+    public List<RoleDto> Roles { get; set; }
 }

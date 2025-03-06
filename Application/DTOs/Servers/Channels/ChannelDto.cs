@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using Domain.Entities;
 
-namespace Application.DTOs.Channels;
+namespace Application.DTOs.Servers.Channels;
 
 public class ChannelDto
 {

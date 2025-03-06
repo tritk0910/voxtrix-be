@@ -1,3 +1,5 @@
+using Application.DTOs.Servers.Roles;
+
 namespace Application.DTOs.Servers;
 
 public class ServerMemberDto
@@ -8,4 +10,5 @@ public class ServerMemberDto
     public string Status { get; set; }
     public string CustomStatus { get; set; }
     public bool IsOwner { get; set; }
+    public List<RoleDto> Roles { get; set; }
 }

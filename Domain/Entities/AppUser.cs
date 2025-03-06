@@ -8,9 +8,9 @@ public class AppUser : IdentityUser
 {
     public string DisplayName { get; set; } = "";
     public string Avatar { get; set; }
-    public string CustomStatus { get; set; }
-    public UserStatus Status { get; set; }
-    public string Bio { get; set; }
+    public string CustomStatus { get; set; } = "";
+    public UserStatus Status { get; set; } = UserStatus.Offline;
+    public string Bio { get; set; } = "";
     public DateOnly DoB { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public ICollection<ServerMember> ServerMembers { get; set; } = [];
@@ -19,7 +19,7 @@ public class AppUser : IdentityUser
     public ICollection<Invite> Invites { get; set; } = [];
     public ICollection<Server> OwnedServers { get; set; } = [];
     public ICollection<ServerBan> ServerBans { get; set; } = [];
-    public ICollection<ServerRole> ServerRoles { get; set; } = [];
+    public ICollection<Role> ServerRoles { get; set; } = [];
     public ICollection<Friend> Friends { get; set; } = [];
     public ICollection<UserBlock> BlockedUsers { get; set; } = [];
 }

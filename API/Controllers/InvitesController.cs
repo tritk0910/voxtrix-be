@@ -37,7 +37,8 @@ public class InvitesController(IInviteRepository inviteRepository) : BaseApiCont
     [HttpPost]
     public async Task<ActionResult<Result<InviteDto>>> CreateInvite([FromBody] CreateInviteDto createInviteDto)
     {
-        var invite = await inviteRepository.CreateInvite(createInviteDto);
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var invite = await inviteRepository.CreateInvite(createInviteDto, userId);
         return Ok(Result<InviteDto>.SuccessResult(invite));
     }
 
