@@ -1,21 +1,22 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace Domain.Entities;
-
 public class Role
 {
     [Key]
     public string RoleId { get; set; } = Guid.NewGuid().ToString();
+    public string ServerId { get; set; }
+    public Server Server { get; set; } // Directly linked to Server
+
     [StringLength(100)]
     public string RoleName { get; set; }
-    // Store permissions as a long (bitwise representation)
-    public long Permissions { get; set; }
+    public long Permissions { get; set; } // Bitwise permissions
     [StringLength(7)]
     public string Color { get; set; }
     public int Position { get; set; }
-    public bool IsDefault { get; set; }
+    public bool IsDefault { get; set; } = false;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public ICollection<ServerRole> ServerRoles { get; set; } = [];
+    public ICollection<ServerMemberRole> ServerMemberRoles { get; set; } = [];
 }
 
 public static class RolePermissionHelper

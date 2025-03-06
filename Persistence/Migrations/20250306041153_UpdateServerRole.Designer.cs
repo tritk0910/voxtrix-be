@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Persistence;
@@ -11,9 +12,11 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250306041153_UpdateServerRole")]
+    partial class UpdateServerRole
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -316,9 +319,6 @@ namespace Persistence.Migrations
                     b.Property<string>("RoleId")
                         .HasColumnType("text");
 
-                    b.Property<string>("AppUserId")
-                        .HasColumnType("text");
-
                     b.Property<string>("Color")
                         .HasMaxLength(7)
                         .HasColumnType("character varying(7)");
@@ -339,16 +339,9 @@ namespace Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<string>("ServerId")
-                        .HasColumnType("text");
-
                     b.HasKey("RoleId");
 
-                    b.HasIndex("AppUserId");
-
-                    b.HasIndex("ServerId");
-
-                    b.ToTable("ServerRoles");
+                    b.ToTable("Roles");
                 });
 
             modelBuilder.Entity("Domain.Entities.Server", b =>
@@ -443,20 +436,46 @@ namespace Persistence.Migrations
                     b.Property<string>("ServerMemberRoleId")
                         .HasColumnType("text");
 
-                    b.Property<string>("RoleId")
+                    b.Property<string>("ServerMemberId")
                         .HasColumnType("text");
 
-                    b.Property<string>("ServerMemberId")
+                    b.Property<string>("ServerRoleId")
                         .HasColumnType("text");
 
                     b.HasKey("ServerMemberRoleId");
 
-                    b.HasIndex("RoleId");
+                    b.HasIndex("ServerRoleId");
 
-                    b.HasIndex("ServerMemberId", "RoleId")
+                    b.HasIndex("ServerMemberId", "ServerRoleId")
                         .IsUnique();
 
-                    b.ToTable("ServerMemberRoles");
+                    b.ToTable("ServerMemberRole");
+                });
+
+            modelBuilder.Entity("Domain.Entities.ServerRole", b =>
+                {
+                    b.Property<string>("ServerRoleId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("AppUserId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("RoleId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ServerId")
+                        .HasColumnType("text");
+
+                    b.HasKey("ServerRoleId");
+
+                    b.HasIndex("AppUserId");
+
+                    b.HasIndex("ServerId");
+
+                    b.HasIndex("RoleId", "ServerId")
+                        .IsUnique();
+
+                    b.ToTable("ServerRole");
                 });
 
             modelBuilder.Entity("Domain.Entities.UserBlock", b =>
@@ -724,20 +743,6 @@ namespace Persistence.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Role", b =>
-                {
-                    b.HasOne("Domain.Entities.AppUser", null)
-                        .WithMany("ServerRoles")
-                        .HasForeignKey("AppUserId");
-
-                    b.HasOne("Domain.Entities.Server", "Server")
-                        .WithMany("Roles")
-                        .HasForeignKey("ServerId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("Server");
-                });
-
             modelBuilder.Entity("Domain.Entities.Server", b =>
                 {
                     b.HasOne("Domain.Entities.AppUser", "Owner")
@@ -784,19 +789,40 @@ namespace Persistence.Migrations
 
             modelBuilder.Entity("Domain.Entities.ServerMemberRole", b =>
                 {
-                    b.HasOne("Domain.Entities.Role", "Role")
-                        .WithMany("ServerMemberRoles")
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.HasOne("Domain.Entities.ServerMember", "ServerMember")
                         .WithMany("ServerMemberRoles")
                         .HasForeignKey("ServerMemberId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.Navigation("Role");
+                    b.HasOne("Domain.Entities.ServerRole", "ServerRole")
+                        .WithMany("ServerMemberRoles")
+                        .HasForeignKey("ServerRoleId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("ServerMember");
+
+                    b.Navigation("ServerRole");
+                });
+
+            modelBuilder.Entity("Domain.Entities.ServerRole", b =>
+                {
+                    b.HasOne("Domain.Entities.AppUser", null)
+                        .WithMany("ServerRoles")
+                        .HasForeignKey("AppUserId");
+
+                    b.HasOne("Domain.Entities.Role", "Role")
+                        .WithMany("ServerRoles")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Domain.Entities.Server", "Server")
+                        .WithMany("ServerRoles")
+                        .HasForeignKey("ServerId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Role");
+
+                    b.Navigation("Server");
                 });
 
             modelBuilder.Entity("Domain.Entities.UserBlock", b =>
@@ -908,7 +934,7 @@ namespace Persistence.Migrations
 
             modelBuilder.Entity("Domain.Entities.Role", b =>
                 {
-                    b.Navigation("ServerMemberRoles");
+                    b.Navigation("ServerRoles");
                 });
 
             modelBuilder.Entity("Domain.Entities.Server", b =>
@@ -919,12 +945,17 @@ namespace Persistence.Migrations
 
                     b.Navigation("Invites");
 
-                    b.Navigation("Roles");
-
                     b.Navigation("ServerMembers");
+
+                    b.Navigation("ServerRoles");
                 });
 
             modelBuilder.Entity("Domain.Entities.ServerMember", b =>
+                {
+                    b.Navigation("ServerMemberRoles");
+                });
+
+            modelBuilder.Entity("Domain.Entities.ServerRole", b =>
                 {
                     b.Navigation("ServerMemberRoles");
                 });

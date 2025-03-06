@@ -16,5 +16,5 @@ public class Server
     public ICollection<Invite> Invites { get; set; } = [];
     public ICollection<ServerBan> Bans { get; set; } = [];
     public ICollection<Channel> Channels { get; set; } = [];
-    public ICollection<ServerRole> ServerRoles { get; set; } = [];
+    public ICollection<Role> Roles { get; set; } = [];
 }

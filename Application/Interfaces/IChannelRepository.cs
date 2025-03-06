@@ -1,5 +1,5 @@
-using Application.DTOs.Channels;
 using Application.Core;
+using Application.DTOs.Servers.Channels;
 
 namespace Application.Interfaces;
 

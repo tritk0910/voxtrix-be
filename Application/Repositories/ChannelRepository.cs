@@ -1,4 +1,3 @@
-using Application.DTOs.Channels;
 using Application.Interfaces;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
@@ -6,6 +5,7 @@ using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 using Application.Core;
+using Application.DTOs.Servers.Channels;
 
 namespace Application.Repositories;
 

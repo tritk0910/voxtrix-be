@@ -30,5 +30,11 @@ public class UserProfile : Profile
             .ForMember(dest => dest.DisplayName, opt => opt.MapFrom(src => src.BlockedUser.DisplayName))
             .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.BlockedUser.Avatar))
             .ReverseMap();
+        CreateMap<ServerMember, UserBasicDto>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Member.Id))
+            .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.Member.UserName))
+            .ForMember(dest => dest.DisplayName, opt => opt.MapFrom(src => src.Member.DisplayName))
+            .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.Member.Avatar))
+            .ReverseMap();
     }
 }

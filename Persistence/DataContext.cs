@@ -17,7 +17,8 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
     public DbSet<Friend> Friends { get; set; }
     public DbSet<UserBlock> UserBlocks { get; set; }
     public DbSet<Notification> Notifications { get; set; }
-    public new DbSet<Role> Roles { get; set; }
+    public DbSet<Role> ServerRoles { get; set; }
+    public DbSet<ServerMemberRole> ServerMemberRoles { get; set; }
     #endregion
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -30,6 +31,26 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
         modelBuilder.Entity<AppUser>(e =>
         {
             e.HasIndex(u => u.UserName).IsUnique();
+        });
+
+        modelBuilder.Entity<Server>(e =>
+        {
+            e.HasKey(s => s.ServerId);
+
+            e.HasMany(s => s.ServerMembers)
+                .WithOne(sm => sm.Server)
+                .HasForeignKey(sm => sm.ServerId)
+                .OnDelete(DeleteBehavior.Cascade); // Ensures ServerMembers are deleted
+
+            e.HasMany(s => s.Roles)
+                .WithOne(sr => sr.Server)
+                .HasForeignKey(sr => sr.ServerId)
+                .OnDelete(DeleteBehavior.Cascade); // Ensures ServerRoles are deleted
+
+            e.HasOne(s => s.Owner)
+                .WithMany(u => u.OwnedServers)
+                .HasForeignKey(s => s.OwnerId)
+                .OnDelete(DeleteBehavior.Restrict); // Prevents accidental deletion if user is still owner
         });
 
         modelBuilder.Entity<ServerMember>(e =>
@@ -57,15 +78,6 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
                 .WithMany(u => u.Invites)
                 .HasForeignKey(i => i.AuthorId)
                 .OnDelete(DeleteBehavior.Cascade);
-        });
-
-        modelBuilder.Entity<Server>(e =>
-        {
-            e.HasKey(s => s.ServerId);
-            e.HasOne(s => s.Owner)
-                .WithMany(u => u.OwnedServers)
-                .HasForeignKey(s => s.OwnerId)
-                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<Message>(e =>
@@ -134,20 +146,25 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        modelBuilder.Entity<ServerRole>(e =>
+        modelBuilder.Entity<Role>(e =>
         {
-            e.HasKey(sr => sr.ServerRoleId);
-            e.HasOne(sr => sr.Role)
-                .WithMany(r => r.ServerRoles)
-                .HasForeignKey(sr => sr.RoleId)
+            e.HasKey(sr => sr.RoleId);
+            e.HasMany(sr => sr.ServerMemberRoles)
+                .WithOne(smr => smr.Role)
+                .HasForeignKey(smr => smr.RoleId)
+                .OnDelete(DeleteBehavior.Cascade); // Ensures ServerMemberRoles are deleted
+        });
+
+        modelBuilder.Entity<ServerMemberRole>(e =>
+        {
+            e.HasKey(smr => smr.ServerMemberRoleId);
+            e.HasOne(smr => smr.ServerMember)
+                .WithMany(sm => sm.ServerMemberRoles)
+                .HasForeignKey(smr => smr.ServerMemberId)
                 .OnDelete(DeleteBehavior.Cascade);
-            e.HasOne(sr => sr.User)
-                .WithMany(u => u.ServerRoles)
-                .HasForeignKey(sr => sr.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-            e.HasOne(sr => sr.Server)
-                .WithMany(s => s.ServerRoles)
-                .HasForeignKey(sr => sr.ServerId)
+            e.HasOne(smr => smr.Role)
+                .WithMany(sr => sr.ServerMemberRoles)
+                .HasForeignKey(smr => smr.RoleId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
         #endregion

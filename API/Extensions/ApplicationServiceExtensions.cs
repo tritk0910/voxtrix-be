@@ -52,6 +52,7 @@ public static class ApplicationServiceExtensions
         services.AddScoped<IServerRepository, ServerRepository>();
         services.AddScoped<IInviteRepository, InviteRepository>();
         services.AddScoped<IChannelRepository, ChannelRepository>();
+        services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddStackExchangeRedisCache(options =>
         {
             options.Configuration = configuration.GetConnectionString("Cache");

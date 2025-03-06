@@ -27,22 +27,17 @@ public class ServerRepository(DataContext context, IMapper mapper) : IServerRepo
         var server = mapper.Map<Server>(createServerDto);
         server.OwnerId = userId;
 
-        var everyoneRole = new Role 
+        var everyoneRole = new Role
         {
-            RoleName= "everyone",
+            RoleName = "everyone",
             Permissions = (long)(RolePermission.ViewChannel | RolePermission.ReadMessageHistory),
             Color = "#000000",
             Position = 0,
             IsDefault = true
         };
 
-        server.ServerRoles = 
-        [
-            new ServerRole
-            {
-                Role = everyoneRole
-            }
-        ];
+        server.Roles = [everyoneRole];
+
 
         server.ServerMembers =
         [
@@ -77,7 +72,7 @@ public class ServerRepository(DataContext context, IMapper mapper) : IServerRepo
             .Where(s => s.ServerId == serverId)
             .AsNoTracking()
             .Include(s => s.Invites)
-            .Include(s => s.ServerRoles)
+            .Include(s => s.Roles)
             .ProjectTo<ServerDetailsDto>(mapper.ConfigurationProvider)
             .FirstOrDefaultAsync();
 

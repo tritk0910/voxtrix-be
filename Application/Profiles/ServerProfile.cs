@@ -1,4 +1,5 @@
 using Application.DTOs.Servers;
+using Application.DTOs.Servers.Roles;
 using AutoMapper;
 using Domain.Entities;
 
@@ -26,6 +27,7 @@ public class ServerProfile : Profile
         CreateMap<Server, ServerDetailsDto>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.ServerId))
             .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.ServerName))
+            .ForMember(dest => dest.Roles, opt => opt.MapFrom(src => src.Roles.ToList()))
             .ReverseMap();
         CreateMap<ServerBan, BanDto>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.BanId))
@@ -36,6 +38,7 @@ public class ServerProfile : Profile
             .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.Member.Avatar))
             .ForMember(dest => dest.CustomStatus, opt => opt.MapFrom(src => src.Member.CustomStatus))
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Member.Status))
+            .ForMember(dest => dest.Roles, opt => opt.MapFrom(src => src.ServerMemberRoles.Select(x => x.Role)))
             .ReverseMap();
     }
 }

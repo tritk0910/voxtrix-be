@@ -1,5 +1,5 @@
 using Application.Core;
-using Application.DTOs.Channels;
+using Application.DTOs.Servers.Channels;
 using Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

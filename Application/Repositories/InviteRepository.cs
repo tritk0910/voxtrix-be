@@ -39,10 +39,19 @@ public class InviteRepository(DataContext context, IMapper mapper) : IInviteRepo
         // Add the user to the server
         var serverMember = new ServerMember
         {
-            ServerMemberId = Guid.NewGuid().ToString(),
             ServerId = result.ServerId,
             MemberId = userId,
-            JoinedAt = DateTime.UtcNow
+            JoinedAt = DateTime.UtcNow,
+            ServerMemberRoles =
+            [
+                new ServerMemberRole
+                {
+                    RoleId = context.ServerRoles
+                        .Where(r => r.ServerId == result.ServerId && r.IsDefault)
+                        .Select(r => r.RoleId)
+                        .SingleOrDefault(),
+                }
+            ]
         };
 
         context.ServerMembers.Add(serverMember);
@@ -54,9 +63,10 @@ public class InviteRepository(DataContext context, IMapper mapper) : IInviteRepo
         return "User added to the server successfully";
     }
 
-    public async Task<InviteDto> CreateInvite(CreateInviteDto createInviteDto)
+    public async Task<InviteDto> CreateInvite(CreateInviteDto createInviteDto, string userId)
     {
         var invite = mapper.Map<Invite>(createInviteDto);
+        invite.AuthorId = userId;
         invite.InviteCode = GenerateRandomString();
         invite.MaxUses = -1;
         invite.ExpiredAt = DateTime.UtcNow.AddHours(24);
