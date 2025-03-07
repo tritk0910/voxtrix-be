@@ -4,6 +4,7 @@ using Application.Interfaces;
 using Application.Profiles;
 using Application.Repositories;
 using Application.Services;
+using Application.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Persistence;
@@ -21,6 +22,7 @@ public static class ApplicationServiceExtensions
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             });
         services.AddRouting(options => options.LowercaseUrls = true);
+        services.Configure<CloudinarySettings>(configuration.GetSection("Cloudinary"));
         services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "Voxtrix API", Version = "v1" });
@@ -46,6 +48,7 @@ public static class ApplicationServiceExtensions
         });
         services.AddCors();
         services.AddAutoMapper(typeof(AccountProfile).Assembly);
+        services.AddScoped<ICloudinaryService, CloudinaryService>();
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IUserRepository, UserRepository>();

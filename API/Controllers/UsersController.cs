@@ -59,7 +59,7 @@ public partial class UsersController(UserManager<AppUser> userManager, IUserRepo
     /// <param name="userEditDto">The user details to edit.</param>
     /// <returns>The updated user details.</returns>
     [HttpPut]
-    public async Task<ActionResult<Result<UserDetailsDto>>> EditUserAsync(UserEditDto userEditDto)
+    public async Task<ActionResult<Result<UserDetailsDto>>> EditUserAsync([FromForm] UserEditDto userEditDto)
     {
         var result = await userRepository.EditUserAsync(userEditDto);
         if (!result.Success) return NotFound(result);

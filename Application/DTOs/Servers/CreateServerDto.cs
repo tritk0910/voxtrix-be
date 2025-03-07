@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Http;
+
 namespace Application.DTOs.Servers;
 
 public class CreateServerDto
 {
     public string Name { get; set; }
-    public string Image { get; set; }
+    public IFormFile Avatar { get; set; }
 }

@@ -32,12 +32,30 @@ public partial class ServersController(IServerRepository serverRepository, IChan
     /// <param name="createServerDto">The details of the server to create.</param>
     /// <returns>The created server.</returns>
     [HttpPost]
-    public async Task<ActionResult<Result<ServerDto>>> CreateServer(CreateServerDto createServerDto)
+    public async Task<ActionResult<Result<ServerDto>>> CreateServer([FromForm] CreateServerDto createServerDto)
     {
         var userId = GetCurrentUserId();
         var server = await serverRepository.CreateServer(createServerDto, userId);
 
-        return Ok(Result<ServerDto>.SuccessResult(server));
+        if (!server.Success) return BadRequest(server);
+
+        return Ok(server);
+    }
+
+    /// <summary>
+    /// Updates a server.
+    /// </summary>
+    /// <param name="editServerDto">The details of the server to update.</param>
+    /// <returns>The updated server.</returns>
+    [HttpPut]
+    public async Task<ActionResult<Result<ServerDto>>> UpdateServer([FromForm] EditServerDto editServerDto)
+    {
+        var userId = GetCurrentUserId();
+        var server = await serverRepository.UpdateServer(editServerDto, userId);
+
+        if (!server.Success) return BadRequest(server);
+
+        return Ok(server);
     }
 
     /// <summary>
@@ -122,5 +140,21 @@ public partial class ServersController(IServerRepository serverRepository, IChan
     private string GetCurrentUserId()
     {
         return User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    }
+
+    /// <summary>
+    /// Creates a server by running a script.
+    /// </summary>
+    /// <param name="createServerByScriptDto">The details of the server to create using a script.</param>
+    /// <returns>The created server.</returns>
+    [HttpPost("script")]
+    public async Task<ActionResult<Result<ServerDto>>> CreateServerByScript([FromForm] CreateServerByScriptDto createServerByScriptDto)
+    {
+        var userId = GetCurrentUserId();
+        var server = await serverRepository.CreateServerByScript(createServerByScriptDto, userId);
+
+        if (!server.Success) return BadRequest(server);
+
+        return Ok(server);
     }
 }

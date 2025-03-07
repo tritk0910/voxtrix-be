@@ -20,6 +20,9 @@ public class ServerProfile : Profile
         CreateMap<CreateServerDto, Server>()
             .ForMember(dest => dest.ServerName, opt => opt.MapFrom(src => src.Name))
             .ReverseMap();
+        CreateMap<EditServerDto, Server>()
+            .ForMember(dest => dest.ServerName, opt => opt.MapFrom(src => src.Name))
+            .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
         CreateMap<Server, ServerBasicDto>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.ServerId))
             .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.ServerName))

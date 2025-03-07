@@ -1,6 +1,7 @@
 using Application.Core;
 using Application.DTOs.Users;
 using Application.Interfaces;
+using Application.Services;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Domain.Entities;
@@ -9,7 +10,7 @@ using Persistence;
 
 namespace Application.Repositories;
 
-public class UserRepository(DataContext context, IMapper mapper) : IUserRepository
+public class UserRepository(DataContext context, IMapper mapper, ICloudinaryService cloudinaryService) : IUserRepository
 {
     public async Task<IQueryable<UserDto>> GetAllUsersAsync(DefaultParams defaultParams)
     {
@@ -53,12 +54,33 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
         if (user == null) return Result<UserDetailsDto>.FailureResult("User not found");
 
         mapper.Map(userEditDto, user);
+
+        if (userEditDto.Avatar != null && !userEditDto.ResetAvatar)
+        {
+            if (!CloudinaryService.IsAvatarSquareResolutionValid(userEditDto.Avatar, 128, 128))
+                return Result<UserDetailsDto>.FailureResult("Image resolution must not exceed 128x128");
+
+            var uploadResult = await cloudinaryService.UploadImageAsync(userEditDto.Avatar);
+            if (uploadResult.Error != null) return Result<UserDetailsDto>.FailureResult(uploadResult.Error.Message);
+
+            user.Avatar = uploadResult.SecureUrl.AbsoluteUri;
+        }
+
+        if (userEditDto.ResetAvatar)
+        {
+            user.Avatar = null;
+        }
+
         var result = await context.SaveChangesAsync() > 0;
 
         if (!result) return Result<UserDetailsDto>.FailureResult("Failed to update user");
 
-        var userDetailsDto = mapper.Map<UserDetailsDto>(user);
-        return Result<UserDetailsDto>.SuccessResult(userDetailsDto, "User updated successfully");
+        // Fetch the updated user details to ensure the avatar URL is included
+        var updatedUser = await context.Users
+            .ProjectTo<UserDetailsDto>(mapper.ConfigurationProvider)
+            .FirstOrDefaultAsync(x => x.Id == user.Id);
+
+        return Result<UserDetailsDto>.SuccessResult(updatedUser, "User updated successfully");
     }
 
     public async Task<Result<bool>> DeleteUserAsync(string userId)
