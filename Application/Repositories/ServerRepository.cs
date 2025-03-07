@@ -29,7 +29,7 @@ public class ServerRepository(DataContext context, IMapper mapper) : IServerRepo
 
         var everyoneRole = new Role
         {
-            RoleName = "everyone",
+            RoleName = "@everyone",
             Permissions = (long)(RolePermission.ViewChannel | RolePermission.ReadMessageHistory),
             Color = "#000000",
             Position = 0,
@@ -79,15 +79,23 @@ public class ServerRepository(DataContext context, IMapper mapper) : IServerRepo
         return server;
     }
 
-    public async Task<IQueryable<ServerMemberDto>> GetMembersByServerId(string serverId)
+    public async Task<IQueryable<ServerMemberDto>> GetMembersByServerId(string serverId, DefaultParams defaultParams)
     {
         var members = context.ServerMembers
             .Where(sm => sm.ServerId == serverId)
             .AsNoTracking()
-            .ProjectTo<ServerMemberDto>(mapper.ConfigurationProvider)
+            .Include(m => m.Member)
             .AsQueryable();
-
-        return await Task.FromResult(members);
+    
+        if (!string.IsNullOrEmpty(defaultParams.Search))
+        {
+            members = members.Where(m => m.Member.UserName.ToLower().Contains(defaultParams.Search.ToLower()));
+        }
+    
+        var result = members
+            .ProjectTo<ServerMemberDto>(mapper.ConfigurationProvider);
+    
+        return await Task.FromResult(result);
     }
 
     public async Task<Result<bool>> DeleteServer(string userId, string serverId)

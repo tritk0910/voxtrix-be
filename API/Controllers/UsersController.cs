@@ -21,7 +21,7 @@ public partial class UsersController(UserManager<AppUser> userManager, IUserRepo
     /// <param name="defaultParams">Pagination parameters.</param>
     /// <returns>A paginated list of users.</returns>
     [HttpGet]
-    public async Task<ActionResult<Result<PagedResult<UserDto>>>> GetUsers([FromBody] DefaultParams defaultParams)
+    public async Task<ActionResult<Result<PagedResult<UserDto>>>> GetUsers([FromQuery] DefaultParams defaultParams)
     {
         var users = await userRepository.GetAllUsersAsync(defaultParams);
         var pagedUsers = await PagedList<UserDto>.CreateAsync(users, defaultParams.PageNumber, defaultParams.PageSize);

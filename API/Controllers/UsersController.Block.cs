@@ -13,7 +13,7 @@ public partial class UsersController
     /// <param name="defaultParams">Pagination parameters.</param>
     /// <returns>A paginated list of blocked users.</returns>
     [HttpGet("blocked")]
-    public async Task<ActionResult<Result<PagedResult<BlockedUserDto>>>> GetBlockedUsersAsync([FromQuery] string userId, [FromBody] DefaultParams defaultParams)
+    public async Task<ActionResult<Result<PagedResult<BlockedUserDto>>>> GetBlockedUsersAsync([FromQuery] string userId, [FromQuery] DefaultParams defaultParams)
     {
         var blockedUsers = await userRepository.GetBlockedUsersAsync(userId, defaultParams);
         if (blockedUsers == null) return NotFound(Result<PagedResult<BlockedUserDto>>.FailureResult("User not found"));
