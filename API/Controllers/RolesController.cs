@@ -27,6 +27,12 @@ public class RolesController(IRoleRepository roleRepository) : BaseApiController
         return Ok(result);
     }
 
+    /// <summary>
+    /// Retrieves a list of members for a given role in a server.
+    /// </summary>
+    /// <param name="serverId">The ID of the server.</param>
+    /// <param name="roleId">The ID of the role.</param>
+    /// <returns>A list of members associated with the specified role.</returns>
     [HttpGet("members")]
     public async Task<ActionResult<Result<List<UserBasicDto>>>> GetRoleMembers(string serverId, string roleId)
     {
@@ -35,6 +41,11 @@ public class RolesController(IRoleRepository roleRepository) : BaseApiController
         return Ok(result);
     }
 
+    /// <summary>
+    /// Creates a new role in a server.
+    /// </summary>
+    /// <param name="createRoleDto">The details of the role to create.</param>
+    /// <returns>The created role.</returns>
     [HttpPost]
     public async Task<ActionResult<Result<RoleDetailsDto>>> CreateRole(CreateRoleDto createRoleDto)
     {
@@ -43,6 +54,11 @@ public class RolesController(IRoleRepository roleRepository) : BaseApiController
         return Ok(result);
     }
 
+    /// <summary>
+    /// Updates an existing role in a server.
+    /// </summary>
+    /// <param name="updateRoleDto">The details of the role to update.</param>
+    /// <returns>The updated role.</returns>
     [HttpPut]
     public async Task<ActionResult<Result<RoleDetailsDto>>> UpdateRole(UpdateRoleDto updateRoleDto)
     {
@@ -51,6 +67,11 @@ public class RolesController(IRoleRepository roleRepository) : BaseApiController
         return Ok(result);
     }
 
+    /// <summary>
+    /// Deletes a role from a server.
+    /// </summary>
+    /// <param name="roleId">The ID of the role to delete.</param>
+    /// <returns>A boolean indicating whether the deletion was successful.</returns>
     [HttpDelete]
     public async Task<ActionResult<Result<bool>>> DeleteRole(string roleId)
     {
@@ -59,6 +80,11 @@ public class RolesController(IRoleRepository roleRepository) : BaseApiController
         return Ok(result);
     }
 
+    /// <summary>
+    /// Updates a user's role in a server.
+    /// </summary>
+    /// <param name="updateServerMemberRoleDto">The details of the user role to update.</param>
+    /// <returns>The updated server member.</returns>
     [HttpPut("member")]
     public async Task<ActionResult<Result<ServerMemberDto>>> UpdateUserRole(UpdateOrDeleteServerMemberRoleDto updateServerMemberRoleDto)
     {
@@ -67,6 +93,11 @@ public class RolesController(IRoleRepository roleRepository) : BaseApiController
         return Ok(result);
     }
 
+    /// <summary>
+    /// Deletes a user's role in a server.
+    /// </summary>
+    /// <param name="updateServerMemberRoleDto">The details of the user role to delete.</param>
+    /// <returns>The updated server member.</returns>
     [HttpDelete("member")]
     public async Task<ActionResult<Result<ServerMemberDto>>> DeleteUserRole(UpdateOrDeleteServerMemberRoleDto updateServerMemberRoleDto)
     {

@@ -1,12 +1,11 @@
 using Microsoft.AspNetCore.Http;
 
-namespace Application.DTOs.Users;
+namespace Application.DTOs.Servers;
 
-public class UserEditDto
+public class EditServerDto
 {
     public string Id { get; set; }
-    public string DisplayName { get; set; }
-    public string Bio { get; set; }
+    public string Name { get; set; }
     public IFormFile Avatar { get; set; }
     public bool ResetAvatar { get; set; }
 }
