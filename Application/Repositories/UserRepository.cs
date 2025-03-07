@@ -19,7 +19,21 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
 
         if (!string.IsNullOrEmpty(defaultParams.Search))
         {
-            query = query.Where(x => x.Username.Contains(defaultParams.Search));
+            query = query.Where(x => x.Username.ToLower().Contains(defaultParams.Search.ToLower()));
+        }
+
+        switch (defaultParams.SortBy)
+        {
+            default:
+            case "Id":
+                query = defaultParams.OrderBy != null && defaultParams.OrderBy.ToLower() == "desc" ? query.OrderByDescending(x => x.Id) : query.OrderBy(x => x.Id);
+                break;
+            case "Username":
+                query = defaultParams.OrderBy != null && defaultParams.OrderBy.ToLower() == "desc" ? query.OrderByDescending(x => x.Username) : query.OrderBy(x => x.Username);
+                break;
+            case "DisplayName":
+                query = defaultParams.OrderBy != null && defaultParams.OrderBy.ToLower() == "desc" ? query.OrderByDescending(x => x.DisplayName) : query.OrderBy(x => x.DisplayName);
+                break;
         }
 
         return await Task.FromResult(query);
@@ -238,7 +252,21 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
 
         if (!string.IsNullOrEmpty(defaultParams.Search))
         {
-            query = query.Where(x => x.UserName.Contains(defaultParams.Search));
+            query = query.Where(x => x.UserName.ToLower().Contains(defaultParams.Search.ToLower()));
+        }
+
+        switch (defaultParams.SortBy)
+        {
+            default:
+            case "Id":
+                query = defaultParams.OrderBy != null && defaultParams.OrderBy.ToLower() == "desc" ? query.OrderByDescending(x => x.UserId) : query.OrderBy(x => x.UserId);
+                break;
+            case "Username":
+                query = defaultParams.OrderBy != null && defaultParams.OrderBy.ToLower() == "desc" ? query.OrderByDescending(x => x.UserName) : query.OrderBy(x => x.UserName);
+                break;
+            case "DisplayName":
+                query = defaultParams.OrderBy != null && defaultParams.OrderBy.ToLower() == "desc" ? query.OrderByDescending(x => x.DisplayName) : query.OrderBy(x => x.DisplayName);
+                break;
         }
 
         return await Task.FromResult(query);
@@ -261,7 +289,21 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
 
         if (!string.IsNullOrEmpty(defaultParams.Search))
         {
-            query = query.Where(x => x.UserName.Contains(defaultParams.Search));
+            query = query.Where(x => x.UserName.ToLower().Contains(defaultParams.Search.ToLower()));
+        }
+
+        switch (defaultParams.SortBy)
+        {
+            default:
+            case "Id":
+                query = defaultParams.OrderBy != null && defaultParams.OrderBy.ToLower() == "desc" ? query.OrderByDescending(x => x.UserId) : query.OrderBy(x => x.UserId);
+                break;
+            case "Username":
+                query = defaultParams.OrderBy != null && defaultParams.OrderBy.ToLower() == "desc" ? query.OrderByDescending(x => x.UserName) : query.OrderBy(x => x.UserName);
+                break;
+            case "DisplayName":
+                query = defaultParams.OrderBy != null && defaultParams.OrderBy.ToLower() == "desc" ? query.OrderByDescending(x => x.DisplayName) : query.OrderBy(x => x.DisplayName);
+                break;
         }
 
         return await Task.FromResult(query);
@@ -278,7 +320,21 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
 
         if (!string.IsNullOrEmpty(defaultParams.Search))
         {
-            query = query.Where(x => x.Username.Contains(defaultParams.Search));
+            query = query.Where(x => x.Username.ToLower().Contains(defaultParams.Search.ToLower()));
+        }
+
+        switch (defaultParams.SortBy)
+        {
+            default:
+            case "Id":
+                query = defaultParams.OrderBy != null && defaultParams.OrderBy.ToLower() == "desc" ? query.OrderByDescending(x => x.UserId) : query.OrderBy(x => x.UserId);
+                break;
+            case "Username":
+                query = defaultParams.OrderBy != null && defaultParams.OrderBy.ToLower() == "desc" ? query.OrderByDescending(x => x.Username) : query.OrderBy(x => x.Username);
+                break;
+            case "DisplayName":
+                query = defaultParams.OrderBy != null && defaultParams.OrderBy.ToLower() == "desc" ? query.OrderByDescending(x => x.DisplayName) : query.OrderBy(x => x.DisplayName);
+                break;
         }
 
         return await Task.FromResult(query);

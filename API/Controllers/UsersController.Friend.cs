@@ -13,7 +13,7 @@ public partial class UsersController
     /// <param name="defaultParams">Pagination parameters.</param>
     /// <returns>A paginated list of friends.</returns>
     [HttpGet("friends")]
-    public async Task<ActionResult<Result<PagedResult<UserBasicDto>>>> GetFriendsAsync([FromQuery] string userId, [FromBody] DefaultParams defaultParams)
+    public async Task<ActionResult<Result<PagedResult<UserBasicDto>>>> GetFriendsAsync([FromQuery] string userId, [FromQuery] DefaultParams defaultParams)
     {
         var friends = await userRepository.GetFriendsAsync(userId, defaultParams);
         if (friends == null) return NotFound(Result<PagedResult<UserBasicDto>>.FailureResult("User not found"));
@@ -37,7 +37,7 @@ public partial class UsersController
     /// <param name="defaultParams">Pagination parameters.</param>
     /// <returns>A paginated list of pending friend requests.</returns>
     [HttpGet("friends/pending")]
-    public async Task<ActionResult<Result<PagedResult<FriendDto>>>> GetPendingFriendRequestsAsync([FromQuery] string userId, [FromBody] DefaultParams defaultParams)
+    public async Task<ActionResult<Result<PagedResult<FriendDto>>>> GetPendingFriendRequestsAsync([FromQuery] string userId, [FromQuery] DefaultParams defaultParams)
     {
         var pendingRequests = await userRepository.GetPendingFriendRequestsAsync(userId, defaultParams);
         if (pendingRequests == null) return NotFound(Result<PagedResult<FriendDto>>.FailureResult("User not found"));
@@ -61,7 +61,7 @@ public partial class UsersController
     /// <param name="defaultParams">Pagination parameters.</param>
     /// <returns>A paginated list of incoming friend requests.</returns>
     [HttpGet("friends/incoming")]
-    public async Task<ActionResult<Result<PagedResult<FriendDto>>>> GetIncomingFriendRequestsAsync([FromQuery] string userId, [FromBody] DefaultParams defaultParams)
+    public async Task<ActionResult<Result<PagedResult<FriendDto>>>> GetIncomingFriendRequestsAsync([FromQuery] string userId, [FromQuery] DefaultParams defaultParams)
     {
         var incomingRequests = await userRepository.GetIncomingFriendRequestsAsync(userId, defaultParams);
         if (incomingRequests == null) return NotFound(Result<PagedResult<FriendDto>>.FailureResult("User not found"));

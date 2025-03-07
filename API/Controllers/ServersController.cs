@@ -76,9 +76,9 @@ public partial class ServersController(IServerRepository serverRepository, IChan
     /// <param name="defaultParams">The default parameters for pagination.</param>
     /// <returns>The members of the server.</returns>
     [HttpGet("members")]
-    public async Task<ActionResult<Result<List<ServerMemberDto>>>> GetMembersByServerId([FromQuery] string serverId, [FromBody] DefaultParams defaultParams)
+    public async Task<ActionResult<Result<List<ServerMemberDto>>>> GetMembersByServerId([FromQuery] string serverId, [FromQuery] DefaultParams defaultParams)
     {
-        var members = await serverRepository.GetMembersByServerId(serverId);
+        var members = await serverRepository.GetMembersByServerId(serverId, defaultParams);
         var pagedMemberList = await PagedList<ServerMemberDto>.CreateAsync(members, defaultParams.PageNumber, defaultParams.PageSize);
         var result = new PagedResult<ServerMemberDto>
         {
