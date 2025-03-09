@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Persistence;
@@ -11,9 +12,11 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250309054431_AddDirectMessageEntity")]
+    partial class AddDirectMessageEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -145,6 +148,38 @@ namespace Persistence.Migrations
                     b.ToTable("Channels");
                 });
 
+            modelBuilder.Entity("Domain.Entities.DirectMessage", b =>
+                {
+                    b.Property<string>("DirectMessageId")
+                        .HasColumnType("text");
+
+                    b.PrimitiveCollection<string[]>("AttachmentURLs")
+                        .HasColumnType("text[]");
+
+                    b.Property<string>("AuthorId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Content")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("EditedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("RecipientId")
+                        .HasColumnType("text");
+
+                    b.HasKey("DirectMessageId");
+
+                    b.HasIndex("AuthorId");
+
+                    b.HasIndex("RecipientId");
+
+                    b.ToTable("DirectMessages");
+                });
+
             modelBuilder.Entity("Domain.Entities.Friend", b =>
                 {
                     b.Property<string>("FriendId")
@@ -218,9 +253,6 @@ namespace Persistence.Migrations
                     b.Property<string>("MessageId")
                         .HasColumnType("text");
 
-                    b.Property<string>("AppUserId")
-                        .HasColumnType("text");
-
                     b.PrimitiveCollection<string[]>("AttachmentURLs")
                         .HasColumnType("text[]");
 
@@ -239,18 +271,11 @@ namespace Persistence.Migrations
                     b.Property<DateTime>("EditedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("RecipientId")
-                        .HasColumnType("text");
-
                     b.HasKey("MessageId");
-
-                    b.HasIndex("AppUserId");
 
                     b.HasIndex("AuthorId");
 
                     b.HasIndex("ChannelId");
-
-                    b.HasIndex("RecipientId");
 
                     b.ToTable("Messages");
                 });
@@ -644,6 +669,23 @@ namespace Persistence.Migrations
                     b.Navigation("Server");
                 });
 
+            modelBuilder.Entity("Domain.Entities.DirectMessage", b =>
+                {
+                    b.HasOne("Domain.Entities.AppUser", "Author")
+                        .WithMany("SentDirectMessages")
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Domain.Entities.AppUser", "Recipient")
+                        .WithMany("ReceivedDirectMessages")
+                        .HasForeignKey("RecipientId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Author");
+
+                    b.Navigation("Recipient");
+                });
+
             modelBuilder.Entity("Domain.Entities.Friend", b =>
                 {
                     b.HasOne("Domain.Entities.AppUser", "Target")
@@ -679,30 +721,19 @@ namespace Persistence.Migrations
 
             modelBuilder.Entity("Domain.Entities.Message", b =>
                 {
-                    b.HasOne("Domain.Entities.AppUser", null)
+                    b.HasOne("Domain.Entities.AppUser", "User")
                         .WithMany("Messages")
-                        .HasForeignKey("AppUserId");
-
-                    b.HasOne("Domain.Entities.AppUser", "Author")
-                        .WithMany("SentMessages")
                         .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Domain.Entities.Channel", "Channel")
                         .WithMany("Messages")
                         .HasForeignKey("ChannelId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("Domain.Entities.AppUser", "Recipient")
-                        .WithMany("ReceivedMessages")
-                        .HasForeignKey("RecipientId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Author");
-
                     b.Navigation("Channel");
 
-                    b.Navigation("Recipient");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Domain.Entities.Notification", b =>
@@ -896,9 +927,9 @@ namespace Persistence.Migrations
 
                     b.Navigation("Reactions");
 
-                    b.Navigation("ReceivedMessages");
+                    b.Navigation("ReceivedDirectMessages");
 
-                    b.Navigation("SentMessages");
+                    b.Navigation("SentDirectMessages");
 
                     b.Navigation("ServerBans");
 

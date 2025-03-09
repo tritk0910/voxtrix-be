@@ -83,13 +83,22 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
         modelBuilder.Entity<Message>(e =>
         {
             e.HasKey(m => m.MessageId);
+
+            // Relationship for messages sent by the user
+            e.HasOne(m => m.Author)
+                .WithMany(u => u.SentMessages) // Use SentMessages instead of Messages
+                .HasForeignKey(m => m.AuthorId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Relationship for messages received by the user
+            e.HasOne(m => m.Recipient)
+                .WithMany(u => u.ReceivedMessages) // Use ReceivedMessages instead of Messages
+                .HasForeignKey(m => m.RecipientId)
+                .OnDelete(DeleteBehavior.SetNull);
+
             e.HasOne(m => m.Channel)
                 .WithMany(c => c.Messages)
                 .HasForeignKey(m => m.ChannelId)
-                .OnDelete(DeleteBehavior.Cascade);
-            e.HasOne(m => m.Recipient)
-                .WithMany(u => u.Messages)
-                .HasForeignKey(m => m.RecipientId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -167,6 +176,7 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
                 .HasForeignKey(smr => smr.RoleId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
+
         #endregion
     }
 }

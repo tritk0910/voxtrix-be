@@ -15,6 +15,8 @@ public class AppUser : IdentityUser
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public ICollection<ServerMember> ServerMembers { get; set; } = [];
     public ICollection<Message> Messages { get; set; } = [];
+    public ICollection<Message> SentMessages { get; set; } = [];  // Messages the user sent
+    public ICollection<Message> ReceivedMessages { get; set; } = [];  // Messages the user received
     public ICollection<Reaction> Reactions { get; set; } = [];
     public ICollection<Invite> Invites { get; set; } = [];
     public ICollection<Server> OwnedServers { get; set; } = [];
