@@ -14,7 +14,10 @@ builder.Services
 
 var app = builder.Build();
 
-app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin().WithExposedHeaders("Authorization"));
+app.UseCors(x => x.AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowAnyOrigin()
+                .WithExposedHeaders("Authorization"));
 
 // Set styling default root to /wwwroot/ folder
 app.UseStaticFiles();
@@ -34,7 +37,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapHub<AppHub>("/hubs/app");
+app.MapHub<MessageHub>("/hubs/message");
 
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
