@@ -12,18 +12,18 @@ public partial class UsersController
     /// <summary>
     /// Sets a custom status for the authenticated user.
     /// </summary>
-    /// <param name="customStatus">The custom status to set.</param>
+    /// <param name="editCustomStatusUserDto">The custom status to set.</param>
     /// <returns>A result containing the updated user details.</returns>
     /// <response code="200">Custom status updated successfully.</response>
     /// <response code="404">User not found.</response>
     [HttpPost("custom-status")]
-    public async Task<ActionResult<Result<UserDetailsDto>>> SetCustomStatus([FromBody] string customStatus)
+    public async Task<ActionResult<Result<UserDetailsDto>>> SetCustomStatus([FromBody] EditCustomStatusUserDto editCustomStatusUserDto)
     {
         var user = await userManager.Users.FirstOrDefaultAsync(x => x.Email == User.FindFirstValue(ClaimTypes.Email));
 
         if (user == null) return NotFound(Result<UserDetailsDto>.FailureResult("User not found"));
 
-        user.CustomStatus = customStatus;
+        user.CustomStatus = editCustomStatusUserDto.Status;
         await userManager.UpdateAsync(user);
 
         var userDetailsDto = mapper.Map<UserDetailsDto>(user);
@@ -33,24 +33,24 @@ public partial class UsersController
     /// <summary>
     /// Sets a predefined status for the authenticated user.
     /// </summary>
-    /// <param name="status">The status to set.</param>
+    /// <param name="editStatusUserDto">The status to set.</param>
     /// <returns>A result containing the updated user details.</returns>
     /// <response code="200">Status updated successfully.</response>
     /// <response code="400">Invalid status value.</response>
     /// <response code="404">User not found.</response>
     [HttpPost("status")]
-    public async Task<ActionResult<Result<UserDetailsDto>>> SetStatus([FromBody] string status)
+    public async Task<ActionResult<Result<UserDetailsDto>>> SetStatus([FromBody] EditStatusUserDto editStatusUserDto)
     {
         var user = await userManager.Users.FirstOrDefaultAsync(x => x.Email == User.FindFirstValue(ClaimTypes.Email));
 
         if (user == null) return NotFound(Result<UserDetailsDto>.FailureResult("User not found"));
 
-        if (!Enum.IsDefined(typeof(UserStatus), status))
+        if (!Enum.IsDefined(typeof(UserStatus), editStatusUserDto.Status))
         {
             return BadRequest(Result<UserDetailsDto>.FailureResult("Invalid status value"));
         }
 
-        user.Status = Enum.Parse<UserStatus>(status);
+        user.Status = editStatusUserDto.Status;
         await userManager.UpdateAsync(user);
 
         var userDetailsDto = mapper.Map<UserDetailsDto>(user);
