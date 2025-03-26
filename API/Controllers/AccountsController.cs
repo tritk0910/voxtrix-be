@@ -174,10 +174,60 @@ public class AccountsController(UserManager<AppUser> userManager, IMapper mapper
         return Ok(Result<string>.SuccessResult(null, "Password has been reset successfully"));
     }
 
+    /// <summary>
+    /// Refreshes the user's JWT token.
+    /// </summary>
+    /// <param name="refreshToken">The current refresh token.</param>
+    /// <returns>A new access token and refresh token attached to header of the response</returns>
+    [AllowAnonymous]
+    [HttpPost("refresh-token")]
+    public ActionResult<Result<RefreshTokenDto>> RefreshToken(string refreshToken)
+    {
+        var newToken = tokenService.RefreshToken(refreshToken);
+        if (newToken == null) return Unauthorized(Result<RefreshTokenDto>.FailureResult("Invalid refresh token"));
+        Response.Headers.Append("Authorization", $"Bearer {newToken.Token}");
+        Response.Headers.Append("RefreshToken", newToken.RefreshToken);
+        return Ok(Result<RefreshTokenDto>.SuccessResult(null, "Token refreshed successfully"));
+    }
+
+    /// <summary>
+    /// Logs out a user by invalidating their refresh token.
+    /// </summary>
+    /// <param name="refreshToken">The refresh token to invalidate.</param>
+    /// <returns>A result indicating success or failure of the logout operation.</returns>
+    [HttpPost("logout")]
+    public async Task<ActionResult<Result<string>>> Logout(string refreshToken)
+    {
+        var logoutSuccessful = await tokenService.Logout(refreshToken);
+        if (!logoutSuccessful) return BadRequest(Result<string>.FailureResult("Invalid refresh token"));
+
+        return Ok(Result<string>.SuccessResult(null, "Logout successful"));
+    }
+
+    /// <summary>
+    /// Logs out a user from all devices by invalidating all their refresh tokens.
+    /// </summary>
+    /// <returns>A result indicating success or failure of the logout operation.</returns>
+    [HttpPost("logout-all")]
+    public async Task<ActionResult<Result<string>>> LogoutAllDevices()
+    {
+        var userId = await userManager.Users
+            .AsNoTracking()
+            .Where(x => x.Id == User.FindFirstValue(ClaimTypes.NameIdentifier))
+            .Select(x => x.Id)
+            .FirstOrDefaultAsync();
+        var logoutSuccessful = await tokenService.LogoutAllDevices(userId);
+        if (!logoutSuccessful) return BadRequest(Result<string>.FailureResult("All devices are already logged out"));
+
+        return Ok(Result<string>.SuccessResult(null, "Logout successful"));
+    }
+
     private bool CreateUserObject(AppUser user)
     {
         var token = tokenService.CreateToken(user);
+        var refreshToken = tokenService.CreateRefreshToken(user);
         Response.Headers.Append("Authorization", $"Bearer {token}");
+        Response.Headers.Append("RefreshToken", refreshToken);
         return true;
     }
 }
