@@ -19,6 +19,7 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<Role> ServerRoles { get; set; }
     public DbSet<ServerMemberRole> ServerMemberRoles { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
     #endregion
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
