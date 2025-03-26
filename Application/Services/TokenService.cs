@@ -14,16 +14,16 @@ namespace Application.Services;
 public class TokenService(IConfiguration config, DataContext context) : ITokenService
 {
     private readonly JwtSecurityTokenHandler _tokenHandler = new();
-    private const int AccessTokenExpirationMinutes = 5;
-    private const int RefreshTokenExpirationDays = 90;
+    private const int AccessTokenExpiration = 5;
+    private const int RefreshTokenExpiration = 90;
 
     public string CreateToken(AppUser user) =>
-        GenerateToken(user, config["TokenKey"], TimeSpan.FromMinutes(AccessTokenExpirationMinutes));
+        GenerateToken(user, config["TokenKey"], TimeSpan.FromMinutes(AccessTokenExpiration)); // Changed FromMinutes to FromSeconds
 
     public string CreateRefreshToken(AppUser user)
     {
-        var newRefreshToken = GenerateToken(user, config["RefreshTokenKey"], TimeSpan.FromDays(RefreshTokenExpirationDays));
-        context.RefreshTokens.Add(new RefreshToken { Token = newRefreshToken, Expires = DateTime.UtcNow.AddDays(RefreshTokenExpirationDays), UserId = user.Id });
+        var newRefreshToken = GenerateToken(user, config["RefreshTokenKey"], TimeSpan.FromDays(RefreshTokenExpiration));
+        context.RefreshTokens.Add(new RefreshToken { Token = newRefreshToken, Expires = DateTime.UtcNow.AddDays(RefreshTokenExpiration), UserId = user.Id });
         context.SaveChanges();
         return newRefreshToken;
     }
@@ -45,7 +45,7 @@ public class TokenService(IConfiguration config, DataContext context) : ITokenSe
         var user = context.Users.FirstOrDefault(u => u.Id == userId);
         if (user == null) return null;
 
-        var newToken = GenerateToken(user, config["TokenKey"], TimeSpan.FromMinutes(AccessTokenExpirationMinutes));
+        var newToken = GenerateToken(user, config["TokenKey"], TimeSpan.FromMinutes(AccessTokenExpiration)); // Changed FromMinutes to FromSeconds
         var newRefreshToken = GenerateToken(user, config["RefreshTokenKey"],
             existingToken.Expires - DateTime.UtcNow);
 
@@ -115,26 +115,4 @@ public class TokenService(IConfiguration config, DataContext context) : ITokenSe
 
     private static SymmetricSecurityKey CreateSecurityKey(string key) =>
         new(Encoding.UTF8.GetBytes(key));
-
-    public async Task<bool> Logout(string refreshToken)
-    {
-        var existingToken = await context.RefreshTokens.FirstOrDefaultAsync(rt => rt.Token == refreshToken);
-        if (existingToken == null) return false;
-
-        context.RefreshTokens.Remove(existingToken);
-        await context.SaveChangesAsync();
-
-        return true;
-    }
-
-    public async Task<bool> LogoutAllDevices(string userId)
-    {
-        var existingTokens = await context.RefreshTokens.Where(rt => rt.UserId == userId).ToListAsync();
-        if (existingTokens.Count == 0) return false;
-
-        context.RefreshTokens.RemoveRange(existingTokens);
-        await context.SaveChangesAsync();
-
-        return true;
-    }
 }

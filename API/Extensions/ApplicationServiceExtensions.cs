@@ -48,8 +48,9 @@ public static class ApplicationServiceExtensions
         });
         services.AddCors();
         services.AddAutoMapper(typeof(AccountProfile).Assembly);
-        services.AddScoped<ICloudinaryService, CloudinaryService>();
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IAccountRepository, AccountRepository>();
+        services.AddScoped<ICloudinaryService, CloudinaryService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IServerRepository, ServerRepository>();

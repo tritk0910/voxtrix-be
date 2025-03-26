@@ -16,7 +16,7 @@ namespace API.Controllers;
 /// Manages user accounts, including registration, login, password reset, and OTP verification.
 /// </summary>
 [Authorize]
-public class AccountsController(UserManager<AppUser> userManager, IMapper mapper, ITokenService tokenService, IEmailService emailService, IRedisService redisService) : BaseApiController
+public class AccountsController(UserManager<AppUser> userManager, IMapper mapper, ITokenService tokenService, IEmailService emailService, IRedisService redisService, IAccountRepository accountRepository) : BaseApiController
 {
     /// <summary>
     /// Registers a new user.
@@ -198,7 +198,7 @@ public class AccountsController(UserManager<AppUser> userManager, IMapper mapper
     [HttpPost("logout")]
     public async Task<ActionResult<Result<string>>> Logout(string refreshToken)
     {
-        var logoutSuccessful = await tokenService.Logout(refreshToken);
+        var logoutSuccessful = await accountRepository.Logout(refreshToken);
         if (!logoutSuccessful) return BadRequest(Result<string>.FailureResult("Invalid refresh token"));
 
         return Ok(Result<string>.SuccessResult(null, "Logout successful"));
@@ -216,7 +216,7 @@ public class AccountsController(UserManager<AppUser> userManager, IMapper mapper
             .Where(x => x.Id == User.FindFirstValue(ClaimTypes.NameIdentifier))
             .Select(x => x.Id)
             .FirstOrDefaultAsync();
-        var logoutSuccessful = await tokenService.LogoutAllDevices(userId);
+        var logoutSuccessful = await accountRepository.LogoutAllDevices(userId);
         if (!logoutSuccessful) return BadRequest(Result<string>.FailureResult("All devices are already logged out"));
 
         return Ok(Result<string>.SuccessResult(null, "Logout successful"));
