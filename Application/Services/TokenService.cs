@@ -4,7 +4,6 @@ using System.Text;
 using Application.DTOs.Accounts;
 using Application.Interfaces;
 using Domain.Entities;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Persistence;
@@ -18,11 +17,11 @@ public class TokenService(IConfiguration config, DataContext context) : ITokenSe
     private const int RefreshTokenExpiration = 90;
 
     public string CreateToken(AppUser user) =>
-        GenerateToken(user, config["TokenKey"], TimeSpan.FromMinutes(AccessTokenExpiration)); // Changed FromMinutes to FromSeconds
+        GenerateToken(user, config["TokenKey"], TimeSpan.FromMinutes(AccessTokenExpiration));
 
     public string CreateRefreshToken(AppUser user)
     {
-        var newRefreshToken = GenerateToken(user, config["RefreshTokenKey"], TimeSpan.FromDays(RefreshTokenExpiration));
+        var newRefreshToken = GenerateToken(user, config["RefreshTokenKey"], TimeSpan.FromMinutes(RefreshTokenExpiration));
         context.RefreshTokens.Add(new RefreshToken { Token = newRefreshToken, Expires = DateTime.UtcNow.AddDays(RefreshTokenExpiration), UserId = user.Id });
         context.SaveChanges();
         return newRefreshToken;
