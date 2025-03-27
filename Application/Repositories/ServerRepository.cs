@@ -180,9 +180,6 @@ public class ServerRepository(DataContext context, IMapper mapper, ICloudinarySe
 
     public async Task<Result<ServerDto>> CreateServerByScript(CreateServerByScriptDto createServerByScriptDto, string userId)
     {
-        if (createServerByScriptDto.Script == default)
-            return Result<ServerDto>.FailureResult("No script provided");
-
         var server = new Server { };
 
         if (createServerByScriptDto.Avatar != null)
