@@ -15,7 +15,10 @@ services:
       - ConnectionStrings__Database=Host=voxtrix.database;Port=5432;Database=database;Username=postgres;Password=postgres;Include Error Detail=true
       - ConnectionStrings__Cache=voxtrix.cache:6379
       - TokenKey=5NPBzaEYh6BGrCU/P2YDNZ2BTgqLimvHUA3WgIvCTgFMYIqDNIGH+wTQ31b3eYXUem7nhrhgnyL7VHy6cUeCQA==
-
+      - RefreshTokenKey=994738e0a42ff0bed3036e9c5c6c668d911e34cf25146ba9658cf46fcf2f0a43
+      - Cloudinary__CloudName=dhl3yqer1
+      - Cloudinary__ApiKey=223338764194782
+      - Cloudinary__ApiSecret=EzynmYZZkQSmNojw0UgSyc2Bpfo
   voxtrix.database:
     image: postgres:latest
     container_name: voxtrix.database
