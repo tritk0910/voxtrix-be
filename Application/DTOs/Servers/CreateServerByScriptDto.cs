@@ -8,7 +8,7 @@ public class CreateServerByScriptDto
     public string Name { get; set; }
     public IFormFile Avatar { get; set; }
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public ServerScript Script { get; set; }
+    public ServerScript Script { get; set; } = ServerScript.Basic;
 }
 
 public enum ServerScript
