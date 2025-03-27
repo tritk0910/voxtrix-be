@@ -1,5 +1,5 @@
 using API.Extensions;
-using Application.Services;
+using Application.Services.SignalR;
 using Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -37,7 +37,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapHub<MessageHub>("/hubs/message");
+app.MapHub<MessageHub>("/hubs/message").RequireAuthorization();
 
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;

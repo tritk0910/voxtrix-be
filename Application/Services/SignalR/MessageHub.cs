@@ -1,18 +1,27 @@
+using System.Security.Claims;
 using Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 
-namespace Application.Services;
+namespace Application.Services.SignalR;
 
+[Authorize]
 public class MessageHub(IMessageRepository messageRepository) : Hub
 {
-    public async Task SendMessage(string user, string message)
+    public override async Task OnConnectedAsync()
     {
-        await Clients.All.SendAsync("ReceiveMessage", user, message);
+        var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userId == null)
+        {
+            Context.Abort();
+        }
+        await base.OnConnectedAsync();
     }
 
-    public async Task SendChannelMessage(string authorId, string channelId, string content, List<IFormFile> attachments)
+    public async Task SendChannelMessage(string channelId, string content, List<IFormFile> attachments)
     {
+        var authorId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         var result = await messageRepository.CreateChannelMessageAsync(authorId, channelId, content, attachments);
 
         if (!result.Success)

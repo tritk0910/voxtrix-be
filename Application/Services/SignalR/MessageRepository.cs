@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
-namespace Application.Services;
+namespace Application.Services.SignalR;
 
 public class MessageRepository(DataContext context, IMapper mapper, ICloudinaryService cloudinaryService) : IMessageRepository
 {
