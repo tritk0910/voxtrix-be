@@ -178,13 +178,12 @@ public class AccountsController(UserManager<AppUser> userManager, IMapper mapper
     /// <summary>
     /// Refreshes the user's JWT token.
     /// </summary>
-    /// <param name="refreshToken">The current refresh token.</param>
     /// <returns>A new access token and refresh token attached to header of the response</returns>
     [AllowAnonymous]
     [HttpPost("refresh-token")]
-    public async Task<ActionResult<Result<RefreshTokenCookieResponse>>> RefreshTokenAsync(string refreshToken)
+    public async Task<ActionResult<Result<RefreshTokenCookieResponse>>> RefreshTokenAsync()
     {
-        var newToken = await tokenService.RefreshTokenAsync(refreshToken);
+        var newToken = await tokenService.RefreshTokenAsync(Request.Cookies["voxtrix_refresh_token"]);
         if (newToken == null) return Unauthorized(Result<RefreshTokenCookieResponse>.FailureResult("Invalid refresh token"));
         AssignTokensToResponseHeaderAndCookie(newToken.Token, newToken);
         return Ok(Result<RefreshTokenCookieResponse>.SuccessResult(null, "Token refreshed successfully"));
@@ -193,12 +192,11 @@ public class AccountsController(UserManager<AppUser> userManager, IMapper mapper
     /// <summary>
     /// Logs out a user by invalidating their refresh token.
     /// </summary>
-    /// <param name="refreshToken">The refresh token to invalidate.</param>
     /// <returns>A result indicating success or failure of the logout operation.</returns>
     [HttpPost("logout")]
-    public async Task<ActionResult<Result<string>>> Logout(string refreshToken)
+    public async Task<ActionResult<Result<string>>> Logout()
     {
-        var logoutSuccessful = await accountRepository.Logout(refreshToken);
+        var logoutSuccessful = await accountRepository.Logout(Request.Cookies["voxtrix_refresh_token"]);
         if (!logoutSuccessful) return BadRequest(Result<string>.FailureResult("Invalid refresh token"));
 
         return Ok(Result<string>.SuccessResult(null, "Logout successful"));
@@ -211,11 +209,7 @@ public class AccountsController(UserManager<AppUser> userManager, IMapper mapper
     [HttpPost("logout-all")]
     public async Task<ActionResult<Result<string>>> LogoutAllDevices()
     {
-        var userId = await userManager.Users
-            .AsNoTracking()
-            .Where(x => x.Id == User.FindFirstValue(ClaimTypes.NameIdentifier))
-            .Select(x => x.Id)
-            .FirstOrDefaultAsync();
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var logoutSuccessful = await accountRepository.LogoutAllDevices(userId);
         if (!logoutSuccessful) return BadRequest(Result<string>.FailureResult("All devices are already logged out"));
 
@@ -233,7 +227,7 @@ public class AccountsController(UserManager<AppUser> userManager, IMapper mapper
     private void AssignTokensToResponseHeaderAndCookie(string token, RefreshTokenCookieResponse refreshToken)
     {
         Response.Headers.Append("Authorization", $"Bearer {token}");
-        Response.Cookies.Append("RefreshToken", refreshToken.RefreshToken, new CookieOptions
+        Response.Cookies.Append("voxtrix_refresh_token", refreshToken.RefreshToken, new CookieOptions
         {
             HttpOnly = true,
             SameSite = SameSiteMode.None,
