@@ -16,18 +16,38 @@ public class TokenService(IConfiguration config, DataContext context) : ITokenSe
     private const int AccessTokenExpiration = 5;
     private const int RefreshTokenExpiration = 90;
 
-    public string CreateToken(AppUser user) =>
-        GenerateToken(user, config["TokenKey"], TimeSpan.FromMinutes(AccessTokenExpiration));
-
-    public string CreateRefreshToken(AppUser user)
+    public Task<string> CreateTokenAsync(AppUser user)
     {
-        var newRefreshToken = GenerateToken(user, config["RefreshTokenKey"], TimeSpan.FromMinutes(RefreshTokenExpiration));
-        context.RefreshTokens.Add(new RefreshToken { Token = newRefreshToken, Expires = DateTime.UtcNow.AddDays(RefreshTokenExpiration), UserId = user.Id });
-        context.SaveChanges();
-        return newRefreshToken;
+        return Task.FromResult(GenerateToken(user, config["TokenKey"], TimeSpan.FromMinutes(AccessTokenExpiration)));
     }
 
-    public RefreshTokenDto RefreshToken(string refreshToken)
+    public async Task<RefreshTokenCookieResponse> CreateRefreshTokenAsync(AppUser user)
+    {
+        var expirationDate = DateTime.UtcNow.AddDays(RefreshTokenExpiration);
+        var newRefreshToken = GenerateToken(
+            user,
+            config["RefreshTokenKey"],
+            TimeSpan.FromDays(RefreshTokenExpiration)
+        );
+
+        var refreshToken = new RefreshToken
+        {
+            Token = newRefreshToken,
+            Expires = expirationDate,
+            UserId = user.Id
+        };
+
+        context.RefreshTokens.Add(refreshToken);
+        await context.SaveChangesAsync();
+
+        return new RefreshTokenCookieResponse
+        {
+            RefreshToken = newRefreshToken,
+            Expires = expirationDate
+        };
+    }
+
+    public async Task<RefreshTokenCookieResponse> RefreshTokenAsync(string refreshToken)
     {
         var existingToken = context.RefreshTokens.FirstOrDefault(rt => rt.Token == refreshToken);
         if (existingToken == null || existingToken.Expires < DateTime.UtcNow)
@@ -44,7 +64,7 @@ public class TokenService(IConfiguration config, DataContext context) : ITokenSe
         var user = context.Users.FirstOrDefault(u => u.Id == userId);
         if (user == null) return null;
 
-        var newToken = GenerateToken(user, config["TokenKey"], TimeSpan.FromMinutes(AccessTokenExpiration)); // Changed FromMinutes to FromSeconds
+        var newToken = GenerateToken(user, config["TokenKey"], TimeSpan.FromMinutes(AccessTokenExpiration));
         var newRefreshToken = GenerateToken(user, config["RefreshTokenKey"],
             existingToken.Expires - DateTime.UtcNow);
 
@@ -55,12 +75,13 @@ public class TokenService(IConfiguration config, DataContext context) : ITokenSe
             Expires = existingToken.Expires,
             UserId = userId
         });
-        context.SaveChanges();
+        await context.SaveChangesAsync();
 
-        return new RefreshTokenDto
+        return new RefreshTokenCookieResponse
         {
             Token = newToken,
-            RefreshToken = newRefreshToken
+            RefreshToken = newRefreshToken,
+            Expires = existingToken.Expires
         };
     }
 
