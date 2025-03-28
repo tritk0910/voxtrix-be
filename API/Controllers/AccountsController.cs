@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Threading.Tasks;
 using Application.Core;
 using Application.DTOs.Accounts;
 using Application.DTOs.Users;
@@ -37,7 +38,7 @@ public class AccountsController(UserManager<AppUser> userManager, IMapper mapper
 
         if (result.Succeeded)
         {
-            return Ok(Result<bool>.SuccessResult(CreateUserObject(user), "User registered successfully"));
+            return Ok(Result<bool>.SuccessResult(await CreateUserObject(user), "User registered successfully"));
         }
         return BadRequest(Result<UserDto>.FailureResult("Registration failed"));
     }
@@ -61,7 +62,7 @@ public class AccountsController(UserManager<AppUser> userManager, IMapper mapper
 
         if (result)
         {
-            return Ok(Result<bool>.SuccessResult(CreateUserObject(user), "Login successful"));
+            return Ok(Result<bool>.SuccessResult(await CreateUserObject(user), "Login successful"));
         }
 
         return Unauthorized(Result<UserDto>.FailureResult("Invalid password"));
@@ -181,13 +182,12 @@ public class AccountsController(UserManager<AppUser> userManager, IMapper mapper
     /// <returns>A new access token and refresh token attached to header of the response</returns>
     [AllowAnonymous]
     [HttpPost("refresh-token")]
-    public ActionResult<Result<RefreshTokenDto>> RefreshToken(string refreshToken)
+    public async Task<ActionResult<Result<RefreshTokenCookieResponse>>> RefreshTokenAsync(string refreshToken)
     {
-        var newToken = tokenService.RefreshToken(refreshToken);
-        if (newToken == null) return Unauthorized(Result<RefreshTokenDto>.FailureResult("Invalid refresh token"));
-        Response.Headers.Append("Authorization", $"Bearer {newToken.Token}");
-        Response.Headers.Append("RefreshToken", newToken.RefreshToken);
-        return Ok(Result<RefreshTokenDto>.SuccessResult(null, "Token refreshed successfully"));
+        var newToken = await tokenService.RefreshTokenAsync(refreshToken);
+        if (newToken == null) return Unauthorized(Result<RefreshTokenCookieResponse>.FailureResult("Invalid refresh token"));
+        AssignTokensToResponseHeaderAndCookie(newToken.Token, newToken);
+        return Ok(Result<RefreshTokenCookieResponse>.SuccessResult(null, "Token refreshed successfully"));
     }
 
     /// <summary>
@@ -222,12 +222,23 @@ public class AccountsController(UserManager<AppUser> userManager, IMapper mapper
         return Ok(Result<string>.SuccessResult(null, "Logout successful"));
     }
 
-    private bool CreateUserObject(AppUser user)
+    private async Task<bool> CreateUserObject(AppUser user)
     {
-        var token = tokenService.CreateToken(user);
-        var refreshToken = tokenService.CreateRefreshToken(user);
-        Response.Headers.Append("Authorization", $"Bearer {token}");
-        Response.Headers.Append("RefreshToken", refreshToken);
+        var token = tokenService.CreateTokenAsync(user);
+        var refreshToken = await tokenService.CreateRefreshTokenAsync(user);
+        AssignTokensToResponseHeaderAndCookie(token, refreshToken);
         return true;
+    }
+
+    private void AssignTokensToResponseHeaderAndCookie(string token, RefreshTokenCookieResponse refreshToken)
+    {
+        Response.Headers.Append("Authorization", $"Bearer {token}");
+        Response.Cookies.Append("RefreshToken", refreshToken.RefreshToken, new CookieOptions
+        {
+            HttpOnly = true,
+            SameSite = SameSiteMode.None,
+            Secure = true,
+            Expires = refreshToken.Expires
+        });
     }
 }
