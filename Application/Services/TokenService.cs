@@ -16,9 +16,9 @@ public class TokenService(IConfiguration config, DataContext context) : ITokenSe
     private const int AccessTokenExpiration = 5;
     private const int RefreshTokenExpiration = 90;
 
-    public Task<string> CreateTokenAsync(AppUser user)
+    public string CreateTokenAsync(AppUser user)
     {
-        return Task.FromResult(GenerateToken(user, config["TokenKey"], TimeSpan.FromMinutes(AccessTokenExpiration)));
+        return GenerateToken(user, config["TokenKey"], TimeSpan.FromMinutes(AccessTokenExpiration));
     }
 
     public async Task<RefreshTokenCookieResponse> CreateRefreshTokenAsync(AppUser user)

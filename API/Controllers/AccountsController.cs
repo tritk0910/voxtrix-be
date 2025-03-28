@@ -224,7 +224,7 @@ public class AccountsController(UserManager<AppUser> userManager, IMapper mapper
 
     private async Task<bool> CreateUserObject(AppUser user)
     {
-        var token = await tokenService.CreateTokenAsync(user);
+        var token = tokenService.CreateTokenAsync(user);
         var refreshToken = await tokenService.CreateRefreshTokenAsync(user);
         AssignTokensToResponseHeaderAndCookie(token, refreshToken);
         return true;

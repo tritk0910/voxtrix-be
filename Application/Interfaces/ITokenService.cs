@@ -5,7 +5,7 @@ namespace Application.Interfaces;
 
 public interface ITokenService
 {
-    Task<string> CreateTokenAsync(AppUser user);
+    string CreateTokenAsync(AppUser user);
     Task<RefreshTokenCookieResponse> CreateRefreshTokenAsync(AppUser user);
     Task<RefreshTokenCookieResponse> RefreshTokenAsync(string refreshToken);
     bool ValidateToken(string token);
