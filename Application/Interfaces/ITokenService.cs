@@ -5,8 +5,8 @@ namespace Application.Interfaces;
 
 public interface ITokenService
 {
-    string CreateToken(AppUser user);
-    string CreateRefreshToken(AppUser user);
-    RefreshTokenDto RefreshToken(string refreshToken);
+    string CreateTokenAsync(AppUser user);
+    Task<RefreshTokenCookieResponse> CreateRefreshTokenAsync(AppUser user);
+    Task<RefreshTokenCookieResponse> RefreshTokenAsync(string refreshToken);
     bool ValidateToken(string token);
 }
