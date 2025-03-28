@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Threading.Tasks;
 using Application.Core;
 using Application.DTOs.Accounts;
 using Application.DTOs.Users;
@@ -37,7 +38,7 @@ public class AccountsController(UserManager<AppUser> userManager, IMapper mapper
 
         if (result.Succeeded)
         {
-            return Ok(Result<bool>.SuccessResult(CreateUserObject(user), "User registered successfully"));
+            return Ok(Result<bool>.SuccessResult(await CreateUserObject(user), "User registered successfully"));
         }
         return BadRequest(Result<UserDto>.FailureResult("Registration failed"));
     }
@@ -61,7 +62,7 @@ public class AccountsController(UserManager<AppUser> userManager, IMapper mapper
 
         if (result)
         {
-            return Ok(Result<bool>.SuccessResult(CreateUserObject(user), "Login successful"));
+            return Ok(Result<bool>.SuccessResult(await CreateUserObject(user), "Login successful"));
         }
 
         return Unauthorized(Result<UserDto>.FailureResult("Invalid password"));
@@ -177,28 +178,25 @@ public class AccountsController(UserManager<AppUser> userManager, IMapper mapper
     /// <summary>
     /// Refreshes the user's JWT token.
     /// </summary>
-    /// <param name="refreshToken">The current refresh token.</param>
     /// <returns>A new access token and refresh token attached to header of the response</returns>
     [AllowAnonymous]
     [HttpPost("refresh-token")]
-    public ActionResult<Result<RefreshTokenDto>> RefreshToken(string refreshToken)
+    public async Task<ActionResult<Result<RefreshTokenCookieResponse>>> RefreshTokenAsync()
     {
-        var newToken = tokenService.RefreshToken(refreshToken);
-        if (newToken == null) return Unauthorized(Result<RefreshTokenDto>.FailureResult("Invalid refresh token"));
-        Response.Headers.Append("Authorization", $"Bearer {newToken.Token}");
-        Response.Headers.Append("RefreshToken", newToken.RefreshToken);
-        return Ok(Result<RefreshTokenDto>.SuccessResult(null, "Token refreshed successfully"));
+        var newToken = await tokenService.RefreshTokenAsync(Request.Cookies["voxtrix_refresh_token"]);
+        if (newToken == null) return Unauthorized(Result<RefreshTokenCookieResponse>.FailureResult("Invalid refresh token"));
+        AssignTokensToResponseHeaderAndCookie(newToken.Token, newToken);
+        return Ok(Result<RefreshTokenCookieResponse>.SuccessResult(null, "Token refreshed successfully"));
     }
 
     /// <summary>
     /// Logs out a user by invalidating their refresh token.
     /// </summary>
-    /// <param name="refreshToken">The refresh token to invalidate.</param>
     /// <returns>A result indicating success or failure of the logout operation.</returns>
     [HttpPost("logout")]
-    public async Task<ActionResult<Result<string>>> Logout(string refreshToken)
+    public async Task<ActionResult<Result<string>>> Logout()
     {
-        var logoutSuccessful = await accountRepository.Logout(refreshToken);
+        var logoutSuccessful = await accountRepository.Logout(Request.Cookies["voxtrix_refresh_token"]);
         if (!logoutSuccessful) return BadRequest(Result<string>.FailureResult("Invalid refresh token"));
 
         return Ok(Result<string>.SuccessResult(null, "Logout successful"));
@@ -211,23 +209,30 @@ public class AccountsController(UserManager<AppUser> userManager, IMapper mapper
     [HttpPost("logout-all")]
     public async Task<ActionResult<Result<string>>> LogoutAllDevices()
     {
-        var userId = await userManager.Users
-            .AsNoTracking()
-            .Where(x => x.Id == User.FindFirstValue(ClaimTypes.NameIdentifier))
-            .Select(x => x.Id)
-            .FirstOrDefaultAsync();
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var logoutSuccessful = await accountRepository.LogoutAllDevices(userId);
         if (!logoutSuccessful) return BadRequest(Result<string>.FailureResult("All devices are already logged out"));
 
         return Ok(Result<string>.SuccessResult(null, "Logout successful"));
     }
 
-    private bool CreateUserObject(AppUser user)
+    private async Task<bool> CreateUserObject(AppUser user)
     {
-        var token = tokenService.CreateToken(user);
-        var refreshToken = tokenService.CreateRefreshToken(user);
-        Response.Headers.Append("Authorization", $"Bearer {token}");
-        Response.Headers.Append("RefreshToken", refreshToken);
+        var token = tokenService.CreateTokenAsync(user);
+        var refreshToken = await tokenService.CreateRefreshTokenAsync(user);
+        AssignTokensToResponseHeaderAndCookie(token, refreshToken);
         return true;
+    }
+
+    private void AssignTokensToResponseHeaderAndCookie(string token, RefreshTokenCookieResponse refreshToken)
+    {
+        Response.Headers.Append("Authorization", $"Bearer {token}");
+        Response.Cookies.Append("voxtrix_refresh_token", refreshToken.RefreshToken, new CookieOptions
+        {
+            HttpOnly = true,
+            SameSite = SameSiteMode.None,
+            Secure = true,
+            Expires = refreshToken.Expires
+        });
     }
 }
