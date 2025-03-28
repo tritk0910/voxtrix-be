@@ -16,8 +16,9 @@ var app = builder.Build();
 
 app.UseCors(x => x.AllowAnyHeader()
                 .AllowAnyMethod()
-                .AllowAnyOrigin()
-                .WithExposedHeaders("Authorization", "RefreshToken"));
+                .AllowCredentials()
+                .WithOrigins("http://localhost:3000", "https://localhost:3000")
+                .WithExposedHeaders("Authorization"));
 
 // Set styling default root to /wwwroot/ folder
 app.UseStaticFiles();
