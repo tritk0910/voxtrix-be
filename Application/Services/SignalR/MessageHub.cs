@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.SignalR;
 namespace Application.Services.SignalR;
 
 [Authorize]
-public class MessageHub(IMessageRepository messageRepository) : Hub
+public partial class MessageHub(IMessageRepository messageRepository) : Hub
 {
     public override async Task OnConnectedAsync()
     {
@@ -17,20 +17,6 @@ public class MessageHub(IMessageRepository messageRepository) : Hub
             Context.Abort();
         }
         await base.OnConnectedAsync();
-    }
-
-    public async Task SendChannelMessage(string channelId, string content, List<IFormFile> attachments)
-    {
-        var authorId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var result = await messageRepository.CreateChannelMessageAsync(authorId, channelId, content, attachments);
-
-        if (!result.Success)
-        {
-            await Clients.User(authorId).SendAsync("UploadError", result.Message);
-            return;
-        }
-
-        await Clients.Group(channelId).SendAsync("ReceiveChannelMessage", authorId, content);
     }
 
     public async Task SendDirectMessage(string authorId, string recipientId, string content, List<IFormFile> attachments)
