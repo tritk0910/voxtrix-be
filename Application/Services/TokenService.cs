@@ -68,13 +68,8 @@ public class TokenService(IConfiguration config, DataContext context) : ITokenSe
         var newRefreshToken = GenerateToken(user, config["RefreshTokenKey"],
             existingToken.Expires - DateTime.UtcNow);
 
-        context.RefreshTokens.Remove(existingToken);
-        context.RefreshTokens.Add(new RefreshToken
-        {
-            Token = newRefreshToken,
-            Expires = existingToken.Expires,
-            UserId = userId
-        });
+        existingToken.Token = newRefreshToken;
+        context.RefreshTokens.Update(existingToken);
         await context.SaveChangesAsync();
 
         return new RefreshTokenCookieResponse
