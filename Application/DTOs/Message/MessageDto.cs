@@ -9,6 +9,6 @@ public class MessageDto
     public string ChannelId { get; set; }
     public string Content { get; set; }
     public List<string> AttachmentURLs { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime EditedAt { get; set; }
+    public string CreatedAt { get; set; }
+    public string EditedAt { get; set; }
 }

@@ -134,6 +134,8 @@ public class MessageRepository(DataContext context, IMapper mapper, ICloudinaryS
             return Result<string>.FailureResult("Message not found");
 
         message.Content = content;
+        message.EditedAt = DateTime.UtcNow;
+
         var result = await context.SaveChangesAsync() > 0;
 
         if (!result)
