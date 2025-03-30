@@ -21,6 +21,19 @@ public partial class MessageHub : Hub
         await Clients.Group(channelId).SendAsync("ReceiveChannelMessage", result.Data);
     }
 
+    public async Task EditChannelMessage(string channelId, string messageId, string content)
+    {
+        var result = await messageRepository.EditMessageAsync(messageId, content);
+
+        if (!result.Success)
+        {
+            await Clients.User(Context.UserIdentifier).SendAsync("EditError", result.Message);
+            return;
+        }
+
+        await Clients.Group(channelId).SendAsync("ReceiveEditMessage", messageId, content);
+    }
+
     public async Task JoinChannel(string channelId)
     {
         await Groups.AddToGroupAsync(Context.ConnectionId, channelId);
