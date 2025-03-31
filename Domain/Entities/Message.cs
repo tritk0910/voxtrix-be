@@ -14,7 +14,7 @@ public class Message
     public string ChannelId { get; set; }
     public Channel Channel { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime EditedAt { get; set; }
+    public DateTime? EditedAt { get; set; }
     public ICollection<string> AttachmentURLs { get; set; }
     public ICollection<Reaction> Reactions { get; set; } = [];
 }
