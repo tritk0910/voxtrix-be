@@ -4,6 +4,7 @@ using Application.Interfaces;
 using Application.Profiles;
 using Application.Repositories;
 using Application.Services;
+using Application.Services.SignalR;
 using Application.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -41,7 +42,10 @@ public static class ApplicationServiceExtensions
             c.OperationFilter<SecurityRequirementsOperationFilter>();
         });
 
-        services.AddSignalR();
+        services.AddSignalR(options =>
+        {
+            options.EnableDetailedErrors = true;
+        });
         services.AddDbContext<DataContext>(options =>
         {
             options.UseNpgsql(configuration.GetConnectionString("Database"));

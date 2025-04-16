@@ -57,7 +57,7 @@ public class UserRepository(DataContext context, IMapper mapper, ICloudinaryServ
 
         if (userEditDto.Avatar != null && !userEditDto.ResetAvatar)
         {
-            if (CloudinaryService.IsAvatarSquareResolutionValid(userEditDto.Avatar, 128, 128))
+            if (!CloudinaryService.IsAvatarSquareResolutionValid(userEditDto.Avatar, 128, 128))
                 return Result<UserDetailsDto>.FailureResult("Image resolution must not exceed 128x128");
 
             var uploadResult = await cloudinaryService.UploadImageAsync(userEditDto.Avatar);

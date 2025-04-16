@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
-namespace Application.Services;
+namespace Application.Services.SignalR;
 
 public class MessageRepository(DataContext context, IMapper mapper, ICloudinaryService cloudinaryService) : IMessageRepository
 {
@@ -57,14 +57,19 @@ public class MessageRepository(DataContext context, IMapper mapper, ICloudinaryS
 
     public async Task<Result<MessageDto>> CreateChannelMessageAsync(string authorId, string channelId, string content, List<IFormFile> attachments)
     {
+        var author = await context.Users.FindAsync(authorId);
+        if (author == null)
+            return Result<MessageDto>.FailureResult("Author not found");
+
         var newMessage = new Message
         {
             ChannelId = channelId,
             AuthorId = authorId,
+            Author = author,
             Content = content,
         };
 
-        if (attachments.Count > 0)
+        if (attachments != null && attachments.Count > 0)
         {
             newMessage.AttachmentURLs = [];
             foreach (var attachment in attachments)
@@ -129,6 +134,8 @@ public class MessageRepository(DataContext context, IMapper mapper, ICloudinaryS
             return Result<string>.FailureResult("Message not found");
 
         message.Content = content;
+        message.EditedAt = DateTime.UtcNow;
+
         var result = await context.SaveChangesAsync() > 0;
 
         if (!result)
