@@ -184,7 +184,7 @@ public class ServerRepository(DataContext context, IMapper mapper, ICloudinarySe
 
         if (createServerByScriptDto.Avatar != null)
         {
-            if (CloudinaryService.IsAvatarSquareResolutionValid(createServerByScriptDto.Avatar, 250, 250))
+            if (!CloudinaryService.IsAvatarSquareResolutionValid(createServerByScriptDto.Avatar, 250, 250))
                 return Result<ServerDto>.FailureResult("Image resolution must not exceed 250x250");
 
             var uploadResult = await cloudinaryService.UploadImageAsync(createServerByScriptDto.Avatar);

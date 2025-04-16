@@ -44,7 +44,7 @@ namespace Application.Services
             using var stream = file.OpenReadStream();
             using var skBitmap = SKBitmap.Decode(stream);
 
-            if (skBitmap.Width >= minWidth && skBitmap.Height >= minHeight)
+            if (skBitmap.Width <= minWidth && skBitmap.Height <= minHeight)
             {
                 return true;
             }
