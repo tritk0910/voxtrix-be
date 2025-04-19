@@ -10,6 +10,6 @@ public interface IMessageRepository
     Task<IQueryable<MessageDto>> GetChannelMessagesAsync(string channelId, DefaultParams defaultParams);
     Task<Result<MessageDto>> CreateChannelMessageAsync(string authorId, string channelId, string content, List<IFormFile> attachments);
     Task<Result<DirectMessageDto>> CreateDirectMessageAsync(string authorId, string recipientId, string content, List<IFormFile> attachments);
-    Task<Result<string>> EditMessageAsync(string messageId, string content);
+    Task<Result<MessageDto>> EditMessageAsync(string messageId, string content);
     Task<Result<string>> DeleteMessageAsync(string messageId);
 }

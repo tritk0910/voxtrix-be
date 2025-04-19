@@ -31,7 +31,9 @@ public partial class MessageHub : Hub
             return;
         }
 
-        await Clients.Group(channelId).SendAsync("ReceiveEditMessage", messageId, content);
+        var editedAt = result.Data.EditedAt;
+
+        await Clients.Group(channelId).SendAsync("ReceiveEditMessage", messageId, content, editedAt);
     }
 
     public async Task DeleteChannelMessage(string channelId, string messageId)

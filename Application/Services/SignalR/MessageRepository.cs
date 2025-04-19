@@ -126,12 +126,12 @@ public class MessageRepository(DataContext context, IMapper mapper, ICloudinaryS
         return Result<DirectMessageDto>.SuccessResult(messageDto, "Direct message created successfully");
     }
 
-    public async Task<Result<string>> EditMessageAsync(string messageId, string content)
+    public async Task<Result<MessageDto>> EditMessageAsync(string messageId, string content)
     {
         var message = await context.Messages.FindAsync(messageId);
 
         if (message == null)
-            return Result<string>.FailureResult("Message not found");
+            return Result<MessageDto>.FailureResult("Message not found");
 
         message.Content = content;
         message.EditedAt = DateTime.UtcNow;
@@ -139,9 +139,11 @@ public class MessageRepository(DataContext context, IMapper mapper, ICloudinaryS
         var result = await context.SaveChangesAsync() > 0;
 
         if (!result)
-            return Result<string>.FailureResult("Failed to edit message");
+            return Result<MessageDto>.FailureResult("Failed to edit message");
 
-        return Result<string>.SuccessResult(messageId, "Message edited successfully");
+        var messageDto = mapper.Map<MessageDto>(message);
+
+        return Result<MessageDto>.SuccessResult(messageDto, "Message edited successfully");
     }
 
     public async Task<Result<string>> DeleteMessageAsync(string messageId)
