@@ -1,0 +1,38 @@
+# Comments are provided throughout this file to help you get started.
+# If you need more help, visit the Docker Compose reference guide at
+# https://docs.docker.com/go/compose-spec-reference/
+
+# Here the instructions define your application as a service called "server".
+# This service is built from the Dockerfile in the current directory.
+# You can add other services your application may depend on here, such as a
+# database or a cache. For examples, see the Awesome Compose repository:
+# https://github.com/docker/awesome-compose
+services:
+  server:
+    build:
+      context: .
+      target: final
+    ports:
+      - 5000:8080
+    env_file:
+      - .env
+    environment:
+      - EmailSettings__SmtpServer=${EmailSettings__SmtpServer}
+      - EmailSettings__SmtpPort=${EmailSettings__SmtpPort}
+      - EmailSettings__SenderName=${EmailSettings__SenderName}
+      - EmailSettings__SenderEmail=${EmailSettings__SenderEmail}
+      - EmailSettings__Password=${EmailSettings__Password}
+      - ConnectionStrings__Database=${ConnectionStrings__Database}
+      - ConnectionStrings__Cache=${ConnectionStrings__Cache}
+      - TokenKey=${TokenKey}
+      - RefreshTokenKey=${RefreshTokenKey}
+      - Cloudinary__CloudName=${Cloudinary__CloudName}
+      - Cloudinary__ApiKey=${Cloudinary__ApiKey}
+      - Cloudinary__ApiSecret=${Cloudinary__ApiSecret}
+      - TenorApiKey=${TenorApiKey}
+  voxtrix.cache:
+    image: redis:latest
+    restart: always
+    container_name: voxtrix.cache
+    ports:
+      - "6379:6379"
