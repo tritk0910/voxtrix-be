@@ -23,6 +23,7 @@ public static class ApplicationServiceExtensions
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             });
         services.AddRouting(options => options.LowercaseUrls = true);
+        services.AddHttpClient();
         services.Configure<CloudinarySettings>(configuration.GetSection("Cloudinary"));
         services.AddSwaggerGen(c =>
         {
@@ -62,6 +63,7 @@ public static class ApplicationServiceExtensions
         services.AddScoped<IChannelRepository, ChannelRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IMessageRepository, MessageRepository>();
+        services.AddScoped<IGifService, GifService>();
         services.AddStackExchangeRedisCache(options =>
         {
             options.Configuration = configuration.GetConnectionString("Cache");
